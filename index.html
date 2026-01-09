@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rayleeigh | GitHub Profile</title>
+  <meta name="description" content="Intro website for a GitHub profile." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <div class="ambient">
+    <span class="blob blob-a"></span>
+    <span class="blob blob-b"></span>
+    <span class="grid"></span>
+  </div>
+
+  <header class="site-hero section">
+    <div class="container">
+      <nav class="level nav-compact">
+        <div class="level-left">
+          <div class="level-item">
+            <div class="brand" id="brand-initials">RL</div>
+          </div>
+          <div class="level-item">
+            <p class="brand-text" id="brand-name">Rayleeigh</p>
+          </div>
+        </div>
+        <div class="level-right">
+          <a class="level-item nav-link" href="#projects">Projects</a>
+          <a class="level-item nav-link" href="#about">About</a>
+          <a class="level-item nav-link" href="#stack">Tech Stack</a>
+          <a class="level-item nav-link" href="#naming">Naming</a>
+          <a class="level-item nav-link" href="#contact">Contact</a>
+        </div>
+      </nav>
+
+      <div class="columns is-vcentered hero-body">
+        <div class="column is-7">
+          <p class="eyebrow">GitHub Profile</p>
+          <h1 class="title is-1 hero-title" id="hero-title">Hi, I'm Rayleeigh.</h1>
+          <p class="subtitle hero-subtitle">
+            <span id="hero-bio">Building modern web apps and sharing what I learn.</span>
+            <span class="mono" id="hero-handle">@Rayleeigh</span>
+          </p>
+          <div class="hero-actions">
+            <a class="button is-primary is-medium" id="github-link" href="https://github.com/Rayleeigh">View GitHub</a>
+            <a class="button is-light is-medium" href="#projects">Featured work</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat reveal" style="animation-delay: 0.1s">
+              <p class="stat-value" id="stat-repos">0</p>
+              <p class="stat-label">Public repos</p>
+            </div>
+            <div class="stat reveal" style="animation-delay: 0.2s">
+              <p class="stat-value" id="stat-followers">0</p>
+              <p class="stat-label">Followers</p>
+            </div>
+            <div class="stat reveal" style="animation-delay: 0.3s">
+              <p class="stat-value" id="stat-following">0</p>
+              <p class="stat-label">Following</p>
+            </div>
+          </div>
+        </div>
+        <div class="column is-5">
+          <div class="profile-card reveal" style="animation-delay: 0.15s">
+            <div class="profile-header">
+              <div class="avatar">
+                <img class="avatar-img" id="avatar-img" alt="Profile avatar" />
+              </div>
+              <div>
+                <p class="profile-name" id="profile-name">Rayleeigh</p>
+                <p class="profile-role" id="profile-role">GitHub @Rayleeigh</p>
+              </div>
+            </div>
+            <div class="profile-badges" id="language-tags">
+              <span class="tag">Loading</span>
+            </div>
+            <p class="profile-note" id="profile-note">
+              Shipping thoughtful UI, clean APIs, and small tools that make teams faster.
+            </p>
+            <a class="button is-outlined is-fullwidth" id="github-link-2" href="https://github.com/Rayleeigh">Follow on GitHub</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="about" class="section section-alt">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-4">
+          <p class="section-title">About Me</p>
+          <h2 class="title is-3">Systems that make everyday life smarter.</h2>
+        </div>
+        <div class="column is-8">
+          <div class="content is-medium">
+            <p>
+              I'm <strong>Rayleeigh</strong>, an IT professional focused on building dependable systems that
+              simplify everyday life. I design automation and infrastructure with clarity, resilience, and
+              long-term maintainability in mind.
+            </p>
+            <ul class="focus-list">
+              <li><strong>Home Automation</strong></li>
+              <li><strong>Self-Hosting</strong></li>
+              <li><strong>Advancement Projects</strong></li>
+              <li><strong>IT Infrastructure + Automation</strong></li>
+            </ul>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="info-label">Location</span>
+                <span class="info-value" id="profile-location">Loading</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Company</span>
+                <span class="info-value" id="profile-company">Loading</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Website</span>
+                <span class="info-value" id="profile-website">Loading</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="section-title">Tech Stack</p>
+          <h2 class="title is-3">Tools I lean on every week.</h2>
+        </div>
+      </div>
+      <div class="columns is-multiline stack-grid">
+        <div class="column is-4">
+          <article class="stack-card">
+            <h3 class="stack-title">Languages</h3>
+            <p class="stack-note">Scripting, automation, and systems glue.</p>
+            <div class="stack-icons">
+              <img src="https://skillicons.dev/icons?i=python" alt="Python" />
+              <img src="https://skillicons.dev/icons?i=bash" alt="Bash" />
+              <img src="https://skillicons.dev/icons?i=powershell" alt="PowerShell" />
+            </div>
+          </article>
+        </div>
+        <div class="column is-4">
+          <article class="stack-card">
+            <h3 class="stack-title">DevOps / Hosting</h3>
+            <p class="stack-note">Shipping reliable services and infrastructure.</p>
+            <div class="stack-icons">
+              <img src="https://skillicons.dev/icons?i=docker" alt="Docker" />
+              <img src="https://skillicons.dev/icons?i=nginx" alt="Nginx" />
+              <img src="https://skillicons.dev/icons?i=cloudflare" alt="Cloudflare" />
+              <img src="https://skillicons.dev/icons?i=github" alt="GitHub" />
+              <img src="https://skillicons.dev/icons?i=git" alt="Git" />
+              <img src="https://skillicons.dev/icons?i=linux" alt="Linux" />
+            </div>
+          </article>
+        </div>
+        <div class="column is-4">
+          <article class="stack-card">
+            <h3 class="stack-title">Databases</h3>
+            <p class="stack-note">Data stores that keep everything humming.</p>
+            <div class="stack-icons">
+              <img src="https://skillicons.dev/icons?i=mysql" alt="MySQL" />
+              <img src="https://skillicons.dev/icons?i=postgres" alt="PostgreSQL" />
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="section-title">Featured</p>
+          <h2 class="title is-3">Projects that show my style.</h2>
+        </div>
+        <a class="button is-light" id="all-repos-link" href="https://github.com/Rayleeigh?tab=repositories">All repos</a>
+      </div>
+      <div class="columns is-multiline" id="repo-list">
+        <div class="column is-12">
+          <article class="project-card">
+            <p class="loading">Loading repositories from GitHub...</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="naming" class="section section-alt">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-5">
+          <p class="section-title">HAA Naming</p>
+          <h2 class="title is-3">Home Automation project naming convention.</h2>
+        </div>
+        <div class="column is-7">
+          <div class="content is-medium">
+            <p>All Home Automation projects follow the format:</p>
+            <div class="naming-card">
+              <span class="mono">HAA + NAME</span>
+            </div>
+            <ul class="naming-list">
+              <li><strong>HAA</strong> = Home Automation and Advancement</li>
+              <li><strong>NAME</strong> = Project name (example: <span class="mono">Kuma</span>)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="section">
+    <div class="container">
+      <div class="contact-card">
+        <div>
+          <p class="section-title">Contact</p>
+          <h2 class="title is-3">Say hello or check out the latest work.</h2>
+          <p class="subtitle" id="contact-subtitle">Open to collabs, design systems, and frontend engineering.</p>
+        </div>
+        <div class="contact-actions">
+          <a class="button is-primary" id="email-link" href="mailto:hello@example.com">Email me</a>
+          <a class="button is-light" id="website-link" href="https://example.com">Website</a>
+          <a class="button is-outlined" id="github-link-3" href="https://github.com/Rayleeigh">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>Built with SCSS and Bulma. Data pulled from the GitHub API at runtime.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
