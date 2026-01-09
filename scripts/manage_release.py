@@ -1,326 +1,198 @@
-#!/usr/bin/env python3
 import argparse
 import json
-import os
+import pathlib
+import re
 import subprocess
-from pathlib import Path
-from typing import Tuple, List, Optional
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
-VERSION_FILE = REPO_ROOT / "version.json"
-RELEASE_NOTES_FILE_DEFAULT = REPO_ROOT / "RELEASE_NOTES.md"
-RELEASE_DOC_DIR = REPO_ROOT / "release-doc"
+import sys
 
 
-def run_git(args: List[str]) -> str:
-    result = subprocess.run(
-        ["git"] + args,
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return result.stdout.strip()
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+VERSION_PATH = ROOT / "version.json"
+RELEASE_DOC_DIR = ROOT / "release-doc"
 
 
-def load_version() -> dict:
-    if not VERSION_FILE.exists():
-        # sensible default if missing
-        return {
-            "major": 0,
-            "minor": 1,
-            "patch": 0,
-            "static_note": "",
-            "previous_docs_commit": "",
-        }
-    with VERSION_FILE.open("r", encoding="utf-8") as f:
-        return json.load(f)
+SEMVER_RE = re.compile(r"^v?(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)$")
 
 
-def save_version(data: dict) -> None:
-    with VERSION_FILE.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-        f.write("\n")
+def run_git(args):
+    return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
-def bump_version(current: dict, release_type: str) -> Tuple[int, int, int]:
-    major = int(current.get("major", 0))
-    minor = int(current.get("minor", 0))
-    patch = int(current.get("patch", 0))
+def load_version():
+    with VERSION_PATH.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
 
-    if release_type == "major":
+
+def save_version(payload):
+    with VERSION_PATH.open("w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2)
+        handle.write("\n")
+
+
+def parse_tag(tag):
+    tag = tag.strip()
+    if tag in {"major", "minor", "patch"}:
+        return tag, None
+
+    match = SEMVER_RE.match(tag)
+    if not match:
+        return None, None
+
+    major = int(match.group("major"))
+    minor = int(match.group("minor"))
+    patch = int(match.group("patch"))
+
+    if minor == 0 and patch == 0:
+        return "major", (major, minor, patch)
+    if patch == 0:
+        return "minor", (major, minor, patch)
+    return "patch", (major, minor, patch)
+
+
+def bump(version, bump_type):
+    major = int(version.get("major", 0))
+    minor = int(version.get("minor", 0))
+    patch = int(version.get("patch", 0))
+
+    if bump_type == "major":
         major += 1
         minor = 0
         patch = 0
-    elif release_type == "minor":
+    elif bump_type == "minor":
         minor += 1
         patch = 0
-    elif release_type == "patch":
-        patch += 1
     else:
-        raise ValueError(f"Unknown release type: {release_type}")
+        patch += 1
 
-    return major, minor, patch
-
-
-def parse_semver_tag(tag: str) -> Tuple[int, int, int]:
-    """
-    Expect tags like v1.2.3 or 1.2.3.
-    """
-    if tag.startswith("refs/tags/"):
-        tag = tag[len("refs/tags/"):]
-    if tag.startswith("v"):
-        tag = tag[1:]
-    parts = tag.split(".")
-    if len(parts) != 3:
-        raise ValueError(f"Tag '{tag}' is not a valid semver (MAJOR.MINOR.PATCH).")
-    try:
-        return int(parts[0]), int(parts[1]), int(parts[2])
-    except ValueError as e:
-        raise ValueError(f"Tag '{tag}' contains non-integer version parts.") from e
+    return {"major": major, "minor": minor, "patch": patch}
 
 
-def infer_release_type(old: Tuple[int, int, int], new: Tuple[int, int, int]) -> str:
-    old_major, old_minor, old_patch = old
-    new_major, new_minor, new_patch = new
+def version_string(version):
+    return f"{version['major']}.{version['minor']}.{version['patch']}"
 
-    if new_major > old_major:
-        # best practice: when major increases, minor/patch usually reset,
-        # but we don't hard-enforce to avoid being too strict
-        return "major"
-    if new_major == old_major and new_minor > old_minor:
-        return "minor"
-    if (
-        new_major == old_major
-        and new_minor == old_minor
-        and new_patch > old_patch
-    ):
-        return "patch"
 
-    raise ValueError(
-        f"New version {new_major}.{new_minor}.{new_patch} is not a forward "
-        f"bump from {old_major}.{old_minor}.{old_patch}."
+def list_release_docs():
+    if not RELEASE_DOC_DIR.exists():
+        return []
+    return sorted(
+        str(path.relative_to(ROOT))
+        for path in RELEASE_DOC_DIR.glob("**/*")
+        if path.is_file() and path.name != ".gitkeep"
     )
 
 
-def get_head_commit() -> str:
-    return run_git(["rev-parse", "HEAD"])
-
-
-def get_new_release_docs(previous_commit: str) -> List[Path]:
-    """
-    Return a list of *new* markdown files in release-doc since previous_commit.
-    - If previous_commit is empty or invalid, treat all *.md in release-doc as new.
-    """
+def find_new_release_docs(previous_commit):
     if not RELEASE_DOC_DIR.exists():
         return []
 
-    # if no previous commit, everything is new
     if not previous_commit:
-        return sorted(RELEASE_DOC_DIR.glob("*.md"))
+        return list_release_docs()
 
     try:
-        # get diff of names between previous_commit and HEAD
-        diff_output = run_git(
-            ["diff", "--name-status", f"{previous_commit}..HEAD", "--", "release-doc/"]
+        diff = run_git(
+            [
+                "diff",
+                "--name-status",
+                f"{previous_commit}..HEAD",
+                "--",
+                str(RELEASE_DOC_DIR.relative_to(ROOT)),
+            ]
         )
     except subprocess.CalledProcessError:
-        # if diff fails (e.g., commit not in history), fall back to all files
-        return sorted(RELEASE_DOC_DIR.glob("*.md"))
-
-    new_files: List[Path] = []
-    for line in diff_output.splitlines():
-        if not line:
-            continue
-        status, path = line.split(maxsplit=1)
-        # 'A' = added; 'R' = renamed (we could also treat R as new)
-        if status.startswith("A") and path.endswith(".md"):
-            new_files.append(REPO_ROOT / path)
-
-    if not new_files:
         return []
 
-    # deduplicate and sort
-    return sorted(set(new_files))
+    added = []
+    for line in diff.splitlines():
+        parts = line.split("\t", 1)
+        if len(parts) == 2 and parts[0] == "A":
+            added.append(parts[1])
+    return added
 
 
-def read_file(path: Path) -> str:
-    with path.open("r", encoding="utf-8") as f:
-        return f.read().strip()
+def read_file(path):
+    return pathlib.Path(path).read_text(encoding="utf-8").strip()
 
 
-def get_repo_url() -> Optional[str]:
-    """
-    Build a GitHub repo URL if running inside GitHub Actions.
-    """
-    repo = os.environ.get("GITHUB_REPOSITORY")
-    server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
-    if not repo:
-        return None
-    return f"{server.rstrip('/')}/{repo}"
+def build_release_notes(version_payload, bump_type, message, commit_subject, new_docs, static_notes):
+    notes = [
+        f"## Release v{version_string(version_payload)}",
+        "",
+        f"Version: {version_string(version_payload)}",
+        "",
+        "Static Notes:",
+        static_notes.strip() or "None",
+        "",
+        f"Commit Message: {commit_subject}",
+    ]
+
+    if message:
+        notes.extend(["", f"Release Message: {message}"])
+
+    notes.extend(["", f"Version Type: {bump_type}", "", "Version File: [version.json](version.json)"])
+
+    if bump_type == "major" and new_docs:
+        notes.extend(["", "Release Docs:", ""])
+        for doc in new_docs:
+            notes.append(f"- [{doc}]({doc})")
+        notes.append("")
+        for doc in new_docs:
+            notes.extend([f"### {doc}", "", read_file(ROOT / doc), ""])
+
+    return "\n".join(notes).strip() + "\n"
 
 
-def generate_release_notes(
-    new_version: Tuple[int, int, int],
-    release_type: str,
-    static_note: str,
-    custom_message: str,
-    include_docs: bool,
-    previous_docs_commit: str,
-) -> str:
-    major, minor, patch = new_version
-    version_str = f"{major}.{minor}.{patch}"
-    title = f"# Release v{version_str} ({release_type})"
-
-    sections: List[str] = [title, ""]
-
-    # static note (always)
-    if static_note:
-        sections.append("## ℹ️ General Notes")
-        sections.append(static_note.strip())
-        sections.append("")
-
-    # custom -m message
-    if custom_message:
-        sections.append("## 📝 Release Message (-m)")
-        sections.append(custom_message.strip())
-        sections.append("")
-
-    # latest commit message
-    try:
-        commit_msg = run_git(["log", "-1", "--pretty=%B"])
-        if commit_msg:
-            sections.append("## 🔧 Latest Commit Message")
-            sections.append(commit_msg.strip())
-            sections.append("")
-    except Exception:
-        # non-fatal
-        pass
-
-    # major-only: include new release docs
-    if include_docs:
-        new_docs = get_new_release_docs(previous_docs_commit)
-        if new_docs:
-            sections.append("## 📄 Release Documentation")
-            repo_url = get_repo_url()
-
-            for doc in new_docs:
-                rel_path = doc.relative_to(REPO_ROOT)
-                doc_title = rel_path.name
-                sections.append(f"### {doc_title}")
-
-                if repo_url:
-                    # Link to file in the current repo (default branch assumed to be 'main')
-                    sections.append(
-                        f"[View this document online]({repo_url}/blob/main/{rel_path.as_posix()})"
-                    )
-                    sections.append("")
-
-                content = read_file(doc)
-                sections.append("```md")
-                sections.append(content)
-                sections.append("```")
-                sections.append("")
-        else:
-            sections.append("## 📄 Release Documentation")
-            sections.append(
-                "_No new release-doc markdown files detected for this major release._"
-            )
-            sections.append("")
-
-    sections.append(f"_Generated automatically for v{version_str}_")
-    return "\n".join(sections).strip() + "\n"
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Manage semantic versioning and generate release notes."
-    )
-    parser.add_argument(
-        "--tag",
-        help="Tag name that triggered the release (e.g. v1.2.3). If omitted, version will be bumped purely from version.json and --type.",
-        default="",
-    )
-    parser.add_argument(
-        "--type",
-        choices=["major", "minor", "patch"],
-        help=(
-            "Release type. If --tag is provided, this will be inferred from the difference "
-            "between version.json and the tag, and this flag is optional."
-        ),
-        default="",
-    )
+def main():
+    parser = argparse.ArgumentParser(description="Manage releases and bump versions.")
+    parser.add_argument("--tag", required=True, help="Release tag or semver.")
     parser.add_argument(
         "-m",
         "--message",
-        dest="custom_message",
         default="",
-        help="Custom release message to be included in the release notes.",
+        help="Custom release message to include in notes.",
     )
     parser.add_argument(
         "--output",
-        default=str(RELEASE_NOTES_FILE_DEFAULT),
-        help="Path to write the generated release notes markdown.",
+        default="RELEASE_NOTES.md",
+        help="Output file for release notes.",
     )
-
     args = parser.parse_args()
 
-    version_data = load_version()
-    current_version = (
-        int(version_data.get("major", 0)),
-        int(version_data.get("minor", 0)),
-        int(version_data.get("patch", 0)),
+    bump_type, _ = parse_tag(args.tag)
+    if bump_type is None:
+        print("Tag must be major, minor, patch, or vX.Y.Z.", file=sys.stderr)
+        return 2
+
+    if not VERSION_PATH.exists():
+        print("version.json is missing.", file=sys.stderr)
+        return 1
+
+    payload = load_version()
+    static_notes = payload.get("static_notes", "")
+    previous_commit = payload.get("previous_commit", "")
+
+    try:
+        commit_subject = run_git(["log", "-1", "--pretty=%s"])
+        current_commit = run_git(["rev-parse", "HEAD"])
+    except subprocess.CalledProcessError:
+        print("Git is required to generate release notes.", file=sys.stderr)
+        return 1
+
+    next_version = bump(payload.get("version", {}), bump_type)
+    new_docs = find_new_release_docs(previous_commit) if bump_type == "major" else []
+
+    payload["version"] = next_version
+    payload["previous_commit"] = current_commit
+    save_version(payload)
+
+    notes = build_release_notes(
+        next_version, bump_type, args.message, commit_subject, new_docs, static_notes
     )
-
-    # Determine new version & release type
-    if args.tag:
-        tag_version = parse_semver_tag(args.tag)
-        release_type = args.type or infer_release_type(current_version, tag_version)
-        new_version = tag_version
-    else:
-        if not args.type:
-            raise SystemExit("Either --tag or --type must be provided.")
-        release_type = args.type
-        new_version = bump_version(
-            {
-                "major": current_version[0],
-                "minor": current_version[1],
-                "patch": current_version[2],
-            },
-            release_type,
-        )
-
-    major, minor, patch = new_version
-
-    # Build release notes
-    include_docs = release_type == "major"
-    static_note = version_data.get("static_note", "")
-    previous_docs_commit = version_data.get("previous_docs_commit", "")
-
-    notes = generate_release_notes(
-        new_version=new_version,
-        release_type=release_type,
-        static_note=static_note,
-        custom_message=args.custom_message,
-        include_docs=include_docs,
-        previous_docs_commit=previous_docs_commit,
-    )
-
-    output_path = Path(args.output)
+    output_path = ROOT / args.output
     output_path.write_text(notes, encoding="utf-8")
 
-    # Update version.json with the new version and current HEAD as docs commit marker
-    head = get_head_commit()
-    version_data["major"] = major
-    version_data["minor"] = minor
-    version_data["patch"] = patch
-    version_data["previous_docs_commit"] = head
-    save_version(version_data)
-
-    print(f"Generated release notes at {output_path}")
-    print(f"Bumped version.json to {major}.{minor}.{patch}")
-    print(f"Stored previous_docs_commit = {head}")
+    print(f"Bumped to v{version_string(next_version)} and wrote {output_path}.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
