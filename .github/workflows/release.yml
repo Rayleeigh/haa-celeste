@@ -35,6 +35,7 @@ jobs:
           fi
           echo "valid=false" >> "$GITHUB_OUTPUT"
           echo "Unsupported tag: $TAG"
+          exit 1
 
       - name: Generate release notes
         if: steps.tag.outputs.valid == 'true'
