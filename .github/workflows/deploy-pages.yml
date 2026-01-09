@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ contains(fromJson('["major","minor","patch"]'), github.event.release.tag_name) }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -1,0 +1,9 @@
+{
+  "version": {
+    "major": 0,
+    "minor": 1,
+    "patch": 0
+  },
+  "static_note": "Release notes always include this statement.",
+  "previous_commit": ""
+}
