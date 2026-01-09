@@ -54,17 +54,32 @@
   Promise.all([
     fetchWithFallback(userUrl, localUserUrl),
     fetchWithFallback(repoUrl, localRepoUrl),
+    fetchJson(localUserUrl).catch(() => ({})),
   ])
-    .then(([user, repos]) => {
+    .then(([user, repos, localProfile]) => {
       const displayName = user.name || user.login || username;
       const handle = `@${user.login || username}`;
       const bio = user.bio || "Building modern web apps and sharing what I learn.";
       const company = user.company || "Independent";
       const location = user.location || "Remote";
       const website = normalizeUrl(user.blog || "");
+      const brandLogoUrl = localProfile.brand_logo_url || "";
 
       setText("brand-name", displayName);
-      setText("brand-initials", initialsFrom(displayName) || username.slice(0, 2).toUpperCase());
+      const brandLogo = $("brand-logo");
+      if (brandLogoUrl && brandLogo) {
+        brandLogo.src = brandLogoUrl;
+        brandLogo.alt = `${displayName} logo`;
+        brandLogo.classList.remove("is-hidden");
+        const brandInitials = $("brand-initials");
+        if (brandInitials) brandInitials.classList.add("is-hidden");
+        brandLogo.onerror = () => {
+          brandLogo.classList.add("is-hidden");
+          if (brandInitials) brandInitials.classList.remove("is-hidden");
+        };
+      } else {
+        setText("brand-initials", initialsFrom(displayName) || username.slice(0, 2).toUpperCase());
+      }
       setText("hero-title", `Hi, I'm ${displayName}.`);
       setText("hero-bio", bio);
       setText("hero-handle", handle);
