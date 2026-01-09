@@ -4,6 +4,6 @@
     "minor": 1,
     "patch": 0
   },
-  "static_note": "This project follows semantic versioning (MAJOR.MINOR.PATCH). Major changes may introduce breaking changes, minor versions add features in a backwards compatible way, and patches contain bug fixes and small improvements.",
+  "static_note": "> This project follows semantic versioning (MAJOR.MINOR.PATCH). Major changes may introduce breaking changes, minor versions add features in a backwards compatible way, and patches contain bug fixes and small improvements.",
   "previous_commit": ""
 }
