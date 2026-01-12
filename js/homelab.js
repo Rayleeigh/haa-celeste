@@ -1,5 +1,6 @@
 (() => {
   const indexPath = "homelab-docs/index.json";
+  const landingPath = "homelab-docs/landing.md";
   const profilePath = "data/profile.json";
 
   const setBrandLogo = (url) => {
@@ -21,12 +22,77 @@
   const renderMarkdown = (markdown) => {
     const target = document.getElementById("doc-content");
     if (!target) return;
-    const md = window.markdownit({
-      html: false,
-      linkify: true,
-      typographer: true,
+
+    if (window.markedFootnote) {
+      window.marked.use(window.markedFootnote());
+    }
+
+    window.marked.setOptions({
+      gfm: true,
+      breaks: true,
+      headerIds: true,
+      mangle: false,
+      highlight(code, lang) {
+        if (window.hljs) {
+          if (lang && window.hljs.getLanguage(lang)) {
+            return window.hljs.highlight(code, { language: lang }).value;
+          }
+          return window.hljs.highlightAuto(code).value;
+        }
+        return code;
+      },
     });
-    target.innerHTML = md.render(markdown);
+
+    const rawHtml = window.marked.parse(markdown);
+    const safeHtml = window.DOMPurify
+      ? window.DOMPurify.sanitize(rawHtml, {
+          ADD_TAGS: ["details", "summary", "input"],
+          ADD_ATTR: ["class", "open", "type", "checked", "disabled"],
+        })
+      : rawHtml;
+    target.innerHTML = safeHtml;
+
+    if (window.renderMathInElement) {
+      window.renderMathInElement(target, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+          { left: "\\\\[", right: "\\\\]", display: true },
+        ],
+      });
+    }
+
+    addCopyButtons(target);
+  };
+
+  const addCopyButtons = (target) => {
+    const blocks = target.querySelectorAll("pre > code");
+    blocks.forEach((codeBlock) => {
+      const pre = codeBlock.parentElement;
+      if (!pre || pre.classList.contains("has-copy")) return;
+
+      pre.classList.add("has-copy");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "code-copy";
+      button.textContent = "Copy";
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(codeBlock.innerText);
+          button.textContent = "Copied";
+          setTimeout(() => {
+            button.textContent = "Copy";
+          }, 1500);
+        } catch {
+          button.textContent = "Failed";
+          setTimeout(() => {
+            button.textContent = "Copy";
+          }, 1500);
+        }
+      });
+      pre.appendChild(button);
+    });
   };
 
   const setDocError = (message) => {
@@ -52,10 +118,28 @@
     if (!menu) return;
     menu.innerHTML = "";
 
+    const landingSection = document.createElement("div");
+    landingSection.className = "doc-menu-section";
+    landingSection.innerHTML = `<p class="doc-menu-title">Overview</p>`;
+    const landingList = document.createElement("ul");
+    landingList.className = "doc-menu-list";
+    const landingItem = document.createElement("li");
+    const landingLink = document.createElement("a");
+    landingLink.href = "#landing";
+    landingLink.textContent = "Home";
+    landingLink.className = "doc-menu-link";
+    landingItem.appendChild(landingLink);
+    landingList.appendChild(landingItem);
+    landingSection.appendChild(landingList);
+    menu.appendChild(landingSection);
+
     indexData.categories.forEach((category) => {
-      const section = document.createElement("div");
-      section.className = "doc-menu-section";
-      section.innerHTML = `<p class="doc-menu-title">${category.title}</p>`;
+      const section = document.createElement("details");
+      section.className = "doc-menu-section doc-menu-collapsible";
+      section.dataset.category = category.slug;
+      const summary = document.createElement("summary");
+      summary.className = "doc-menu-title";
+      summary.textContent = category.title;
 
       const list = document.createElement("ul");
       list.className = "doc-menu-list";
@@ -70,6 +154,7 @@
         list.appendChild(item);
       });
 
+      section.appendChild(summary);
       section.appendChild(list);
       menu.appendChild(section);
     });
@@ -77,6 +162,12 @@
 
   const resolveDocPath = (indexData, hash) => {
     const cleaned = (hash || "").replace(/^#/, "");
+    if (!cleaned || cleaned === "landing") {
+      return {
+        path: landingPath,
+        hash: "#landing",
+      };
+    }
     const [categorySlug, docSlug] = cleaned.split("/");
     if (!categorySlug || !docSlug) {
       const firstCategory = indexData.categories[0];
@@ -104,6 +195,14 @@
         link.classList.add("is-active");
       } else {
         link.classList.remove("is-active");
+      }
+    });
+
+    const sections = document.querySelectorAll(".doc-menu-section[data-category]");
+    sections.forEach((section) => {
+      const category = section.dataset.category;
+      if (hash.startsWith(`#${category}/`)) {
+        section.open = true;
       }
     });
   };

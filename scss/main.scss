@@ -110,6 +110,72 @@ a:hover {
   display: inline-flex;
 }
 
+.doc-body code {
+  background: rgba(15, 23, 42, 0.85);
+  color: $accent;
+  padding: 0.2rem 0.35rem;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+
+.doc-body pre {
+  position: relative;
+  background: rgba(12, 18, 32, 0.95);
+  border-radius: 16px;
+  padding: 1.5rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.doc-body pre code {
+  background: transparent;
+  color: $text;
+  padding: 0;
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: $text;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.code-copy:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.doc-body blockquote {
+  border-left: 4px solid $accent-2;
+  padding: 0.75rem 1rem;
+  margin: 1.5rem 0;
+  background: rgba(15, 23, 42, 0.6);
+  color: $text;
+}
+
+.doc-body details {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0;
+}
+
+.doc-body summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.doc-body input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: $accent;
+}
+
 .doc-layout {
   align-items: stretch;
 }
@@ -126,12 +192,37 @@ a:hover {
   margin-top: 1.5rem;
 }
 
+.doc-menu-collapsible {
+  padding: 0.2rem 0;
+}
+
 .doc-menu-title {
   font-size: 0.9rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: $accent-2;
   margin-bottom: 0.8rem;
+}
+
+.doc-menu-collapsible > .doc-menu-title {
+  list-style: none;
+  cursor: pointer;
+  margin-bottom: 0.6rem;
+}
+
+.doc-menu-collapsible > .doc-menu-title::-webkit-details-marker {
+  display: none;
+}
+
+.doc-menu-collapsible > .doc-menu-title::after {
+  content: "▾";
+  float: right;
+  color: $muted;
+  transition: transform 0.2s ease;
+}
+
+.doc-menu-collapsible[open] > .doc-menu-title::after {
+  transform: rotate(180deg);
 }
 
 .doc-menu-list {
