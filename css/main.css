@@ -74,6 +74,73 @@ a:hover {
   z-index: 1;
 }
 
+.doc-shell {
+  min-height: 100vh;
+}
+
+.doc-header {
+  margin-bottom: 2rem;
+}
+
+.doc-body {
+  background: rgba(17, 27, 45, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  padding: 2rem;
+  border-radius: 24px;
+}
+
+.brand-link {
+  display: inline-flex;
+}
+
+.doc-layout {
+  align-items: stretch;
+}
+
+.doc-menu {
+  background: rgba(17, 27, 45, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  padding: 1.5rem;
+  border-radius: 20px;
+  position: sticky;
+  top: 2rem;
+}
+
+.doc-menu-section + .doc-menu-section {
+  margin-top: 1.5rem;
+}
+
+.doc-menu-title {
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffb86b;
+  margin-bottom: 0.8rem;
+}
+
+.doc-menu-list {
+  list-style: none;
+  margin-left: 0;
+}
+
+.doc-menu-link {
+  display: block;
+  color: #f5f7ff;
+  opacity: 0.75;
+  padding: 0.4rem 0;
+  font-weight: 500;
+}
+
+.doc-menu-link.is-active,
+.doc-menu-link:hover {
+  opacity: 1;
+  color: #4fe4da;
+}
+
 .section-alt {
   background: rgba(6, 10, 20, 0.65);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
