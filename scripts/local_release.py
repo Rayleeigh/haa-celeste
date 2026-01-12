@@ -11,6 +11,43 @@ VERSION_PATH = ROOT / "version.json"
 def run_git(args):
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
+def has_command(name):
+    try:
+        subprocess.check_output(["where", name], cwd=ROOT, text=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def ensure_gh():
+    if has_command("gh"):
+        return True
+
+    print("GitHub CLI not found. Attempting to install via winget...")
+    try:
+        subprocess.check_call(
+            ["winget", "install", "--id", "GitHub.cli", "-e", "--source", "winget"],
+            cwd=ROOT,
+        )
+    except FileNotFoundError:
+        print("winget not available. Install GitHub CLI manually.", file=sys.stderr)
+        return False
+    except subprocess.CalledProcessError as exc:
+        print(f"Failed to install GitHub CLI: {exc}", file=sys.stderr)
+        return False
+
+    if not has_command("gh"):
+        print("GitHub CLI installation did not complete.", file=sys.stderr)
+        return False
+
+    try:
+        subprocess.check_call(["gh", "auth", "login"], cwd=ROOT)
+    except subprocess.CalledProcessError as exc:
+        print(f"GitHub CLI login failed: {exc}", file=sys.stderr)
+        return False
+
+    return True
+
 
 def has_changes():
     status = run_git(["status", "--porcelain"])
@@ -74,16 +111,13 @@ def main():
     print(f"Committed {commit_message}")
 
     tag = f"v{new_version}"
+    if not ensure_gh():
+        print("Skipping release creation. Create the release manually.", file=sys.stderr)
+        return 0
+
     try:
-        subprocess.check_call(
-            ["gh", "release", "create", tag, "-t", tag, "-n", ""], cwd=ROOT
-        )
+        subprocess.check_call(["gh", "release", "create", tag, "-t", tag, "-n", ""], cwd=ROOT)
         print(f"Created GitHub release {tag}")
-    except FileNotFoundError:
-        print(
-            "gh CLI not found. Install it or create the GitHub release manually.",
-            file=sys.stderr,
-        )
     except subprocess.CalledProcessError as exc:
         print(f"Failed to create GitHub release: {exc}", file=sys.stderr)
     return 0
