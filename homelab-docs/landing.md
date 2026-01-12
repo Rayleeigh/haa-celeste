@@ -1,4 +1,6 @@
-# Homelab Documentation
+# **Homelab Documentation**
+
+> This page is in development. Some links and features may be unavailable or incomplete.
 
 Welcome to my homelab notes. This landing page highlights the core categories and links to deeper documentation.
 
@@ -10,9 +12,9 @@ Welcome to my homelab notes. This landing page highlights the core categories an
 
 ## Quick Links
 
-- [Firewall Rules](#/network/firewall-rules)
-- [Intranet Webserver](#/services/intranet-webserver)
-- [IoT Configuration](#/security/iot-configuration)
+- [Firewall Rules](#network/firewall-rules)
+- [Intranet Webserver](#services/intranet-webserver)
+- [IoT Configuration](#security/iot-configuration)
 
 ## Conventions
 

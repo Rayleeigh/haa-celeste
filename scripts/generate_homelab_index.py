@@ -19,6 +19,21 @@ def build_index():
     if not DOCS_ROOT.exists():
         return {"categories": []}
 
+    landing = DOCS_ROOT / "landing.md"
+    if landing.exists():
+        categories.append(
+            {
+                "title": "Overview",
+                "slug": "overview",
+                "docs": [
+                    {
+                        "title": "Home",
+                        "slug": "landing",
+                    }
+                ],
+            }
+        )
+
     for category_dir in sorted([p for p in DOCS_ROOT.iterdir() if p.is_dir()]):
         docs = []
         for md_file in sorted(category_dir.glob("*.md")):

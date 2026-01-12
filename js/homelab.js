@@ -118,26 +118,12 @@
     if (!menu) return;
     menu.innerHTML = "";
 
-    const landingSection = document.createElement("div");
-    landingSection.className = "doc-menu-section";
-    landingSection.innerHTML = `<p class="doc-menu-title">Overview</p>`;
-    const landingList = document.createElement("ul");
-    landingList.className = "doc-menu-list";
-    const landingItem = document.createElement("li");
-    const landingLink = document.createElement("a");
-    landingLink.href = "#landing";
-    landingLink.textContent = "Home";
-    landingLink.className = "doc-menu-link";
-    landingItem.appendChild(landingLink);
-    landingList.appendChild(landingItem);
-    landingSection.appendChild(landingList);
-    menu.appendChild(landingSection);
-
     indexData.categories.forEach((category) => {
-      const section = document.createElement("details");
-      section.className = "doc-menu-section doc-menu-collapsible";
+      const isOverview = category.slug === "overview";
+      const section = document.createElement(isOverview ? "div" : "details");
+      section.className = `doc-menu-section${isOverview ? "" : " doc-menu-collapsible"}`;
       section.dataset.category = category.slug;
-      const summary = document.createElement("summary");
+      const summary = document.createElement(isOverview ? "p" : "summary");
       summary.className = "doc-menu-title";
       summary.textContent = category.title;
 
@@ -162,10 +148,10 @@
 
   const resolveDocPath = (indexData, hash) => {
     const cleaned = (hash || "").replace(/^#/, "");
-    if (!cleaned || cleaned === "landing") {
+    if (!cleaned) {
       return {
         path: landingPath,
-        hash: "#landing",
+        hash: "#overview/landing",
       };
     }
     const [categorySlug, docSlug] = cleaned.split("/");
@@ -176,6 +162,13 @@
       return {
         path: `homelab-docs/${firstCategory.slug}/${firstDoc.slug}.md`,
         hash: `#${firstCategory.slug}/${firstDoc.slug}`,
+      };
+    }
+
+    if (categorySlug === "overview" && docSlug === "landing") {
+      return {
+        path: landingPath,
+        hash: "#overview/landing",
       };
     }
 
@@ -202,7 +195,9 @@
     sections.forEach((section) => {
       const category = section.dataset.category;
       if (hash.startsWith(`#${category}/`)) {
-        section.open = true;
+        if (section.tagName.toLowerCase() === "details") {
+          section.open = true;
+        }
       }
     });
   };

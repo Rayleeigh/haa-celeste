@@ -1,32 +1,12 @@
 {
   "categories": [
     {
-      "title": "Network",
-      "slug": "network",
+      "title": "Overview",
+      "slug": "overview",
       "docs": [
         {
-          "title": "Firewall Rules",
-          "slug": "firewall-rules"
-        }
-      ]
-    },
-    {
-      "title": "Security",
-      "slug": "security",
-      "docs": [
-        {
-          "title": "Iot Configuration",
-          "slug": "iot-configuration"
-        }
-      ]
-    },
-    {
-      "title": "Services",
-      "slug": "services",
-      "docs": [
-        {
-          "title": "Intranet Webserver",
-          "slug": "intranet-webserver"
+          "title": "Home",
+          "slug": "landing"
         }
       ]
     }
