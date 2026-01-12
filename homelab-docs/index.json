@@ -29,16 +29,6 @@
           "slug": "intranet-webserver"
         }
       ]
-    },
-    {
-      "title": "Test",
-      "slug": "test",
-      "docs": [
-        {
-          "title": "Very",
-          "slug": "very"
-        }
-      ]
     }
   ]
 }
