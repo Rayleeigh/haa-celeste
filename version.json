@@ -1,9 +1,9 @@
 {
   "version": {
     "major": 2,
-    "minor": 0,
+    "minor": 1,
     "patch": 0
   },
   "static_notes": "Release note always included in this statement.",
-  "previous_commit": "988fb2cd523f037326922acc94258fdd512081f9"
+  "previous_commit": "00880fe7c33f29b2cfa3ab2cfc97b2a2201ea217"
 }
