@@ -44,6 +44,12 @@ Generate release notes and bump version:
 python scripts/manage_release.py --tag major -m "Release vX.Y.Z" --output RELEASE_NOTES.md
 ```
 
+Local release helper (auto-commit + create GitHub release):
+
+```
+python scripts/local_release.py
+```
+
 Commit and push:
 
 ```

@@ -1,8 +1,8 @@
 name: Release Notes
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
 
 permissions:
   contents: write
@@ -10,6 +10,7 @@ permissions:
 jobs:
   notes:
     runs-on: ubuntu-latest
+    if: startsWith(github.event.head_commit.message, 'release: ')
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -21,31 +22,26 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Generate homelab index
-        run: python scripts/generate_homelab_index.py
-
-      - name: Validate tag
+      - name: Parse release commit
         id: tag
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == "major" || "$TAG" == "minor" || "$TAG" == "patch" ]]; then
+          MSG="${{ github.event.head_commit.message }}"
+          if [[ "$MSG" =~ ^release:\ (major|minor|patch)\ v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             echo "valid=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [[ "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "valid=true" >> "$GITHUB_OUTPUT"
+            echo "bump=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+            echo "tag=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "valid=false" >> "$GITHUB_OUTPUT"
-          echo "Unsupported tag: $TAG"
+          echo "Unsupported release commit: $MSG"
           exit 1
 
       - name: Generate release notes
         if: steps.tag.outputs.valid == 'true'
         run: |
           python scripts/manage_release.py \
-            --tag "${GITHUB_REF_NAME}" \
-            -m "${{ github.event.release.name || github.event.release.tag_name }}" \
+            --tag "${{ steps.tag.outputs.bump }}" \
+            -m "${{ github.event.head_commit.message }}" \
             --output "RELEASE_NOTES.md"
 
       - name: Read version
@@ -66,13 +62,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add version.json homelab-docs/index.json
+          git add version.json
           git commit -m "chore: bump version to v${VERSION}" || echo "No changes to commit"
           git push origin main
 
-      - name: Update release notes
+      - name: Create or update release
         if: steps.tag.outputs.valid == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release edit "${GITHUB_REF_NAME}" -F RELEASE_NOTES.md
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release edit "v${VERSION}" -F RELEASE_NOTES.md
+          else
+            gh release create "v${VERSION}" -t "v${VERSION}" -F RELEASE_NOTES.md
+          fi
