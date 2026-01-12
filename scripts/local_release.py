@@ -72,6 +72,20 @@ def main():
     commit_message = f"release: v{new_version}"
     subprocess.check_call(["git", "commit", "-m", commit_message], cwd=ROOT)
     print(f"Committed {commit_message}")
+
+    tag = f"v{new_version}"
+    try:
+        subprocess.check_call(
+            ["gh", "release", "create", tag, "-t", tag, "-n", ""], cwd=ROOT
+        )
+        print(f"Created GitHub release {tag}")
+    except FileNotFoundError:
+        print(
+            "gh CLI not found. Install it or create the GitHub release manually.",
+            file=sys.stderr,
+        )
+    except subprocess.CalledProcessError as exc:
+        print(f"Failed to create GitHub release: {exc}", file=sys.stderr)
     return 0
 
 
