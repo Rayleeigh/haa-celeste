@@ -3,9 +3,7 @@ name: Homelab Docs Index
 on:
   push:
     branches: [main]
-    paths:
-      - "homelab-docs/**"
-      - "scripts/generate_homelab_index.py"
+  workflow_dispatch:
 
 permissions:
   contents: write
