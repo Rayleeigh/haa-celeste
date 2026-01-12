@@ -73,4 +73,4 @@ python scripts/local_release.py
 
 ## Technical Documentation
 
-- See `docs/TECHNICAL.md` for full technical details and workflow internals.
+- See [`docs/TECHNICAL.md`](./docs/TECHNICAL.md) for full technical details and workflow internals.
