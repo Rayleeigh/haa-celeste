@@ -69,6 +69,60 @@ a:hover {
   opacity: 0.15;
 }
 
+.dna-helix {
+  position: absolute;
+  right: 8%;
+  top: 0;
+  bottom: 0;
+  width: 140px;
+  perspective: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  opacity: 0.4;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
+}
+
+.dna-rung {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(79, 228, 218, 0.3),
+    rgba(255, 255, 255, 0.06) 30%,
+    rgba(255, 255, 255, 0.06) 70%,
+    rgba(255, 184, 107, 0.3)
+  );
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--i) * 12deg + var(--offset, 0) * 1deg));
+  will-change: transform;
+}
+
+.dna-rung::before,
+.dna-rung::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dna-rung::before {
+  left: -3px;
+  background: #4fe4da;
+  box-shadow: 0 0 8px rgba(79, 228, 218, 0.6);
+}
+
+.dna-rung::after {
+  right: -3px;
+  background: #ffb86b;
+  box-shadow: 0 0 8px rgba(255, 184, 107, 0.6);
+}
+
 .section {
   position: relative;
   z-index: 1;
@@ -609,5 +663,11 @@ a:hover {
   .contact-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .dna-helix {
+    opacity: 0.15;
+    width: 100px;
+    right: 2%;
   }
 }
