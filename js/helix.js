@@ -14,8 +14,8 @@
   let time = 0;
 
   const tick = () => {
-    time += 0.2;
-    const scroll = window.scrollY * 0.25;
+    time += 0.15;
+    const scroll = window.scrollY * 0.12;
     helix.style.setProperty("--offset", time + scroll);
     requestAnimationFrame(tick);
   };

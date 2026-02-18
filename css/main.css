@@ -9,8 +9,6 @@
 
 html,
 body {
-  height: 100%;
-  overflow: hidden;
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
   background: #0a0e17;
   color: #e0eaff;
@@ -57,7 +55,7 @@ strong {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.06) 2px, rgba(0, 0, 0, 0.06) 4px);
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 4px);
   mix-blend-mode: multiply;
 }
 
@@ -1099,13 +1097,14 @@ strong {
   overflow: hidden;
   z-index: 0;
   pointer-events: none;
+  height: 100vh;
 }
 
 .blob {
   position: absolute;
   border-radius: 999px;
   filter: blur(0);
-  opacity: 0.45;
+  opacity: 0.2;
 }
 
 .blob-a {
@@ -1127,9 +1126,9 @@ strong {
 .grid {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 42px 42px;
-  opacity: 0.15;
+  opacity: 0.08;
 }
 
 .dna-helix {
@@ -1142,7 +1141,7 @@ strong {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  opacity: 0.4;
+  opacity: 0.25;
   -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
   mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
 }
@@ -1150,7 +1149,7 @@ strong {
 .dna-rung {
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, rgba(0, 240, 255, 0.3), rgba(255, 255, 255, 0.06) 30%, rgba(255, 255, 255, 0.06) 70%, rgba(255, 107, 53, 0.3));
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(255, 255, 255, 0.04) 30%, rgba(255, 255, 255, 0.04) 70%, rgba(255, 107, 53, 0.2));
   position: relative;
   transform-style: preserve-3d;
   transform: rotateY(calc(var(--i) * 12deg + var(--offset, 0) * 1deg));
@@ -1159,8 +1158,8 @@ strong {
 .dna-rung::before, .dna-rung::after {
   content: "";
   position: absolute;
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   top: 50%;
   transform: translateY(-50%);
@@ -1168,12 +1167,12 @@ strong {
 .dna-rung::before {
   left: -3px;
   background: #00f0ff;
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 6px rgba(0, 240, 255, 0.3);
 }
 .dna-rung::after {
   right: -3px;
   background: #ff6b35;
-  box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 0 6px rgba(255, 107, 53, 0.3);
 }
 
 .section {
@@ -1181,8 +1180,13 @@ strong {
   z-index: 1;
 }
 
+.doc-shell {
+  min-height: auto !important;
+  padding-bottom: 2rem !important;
+}
+
 .nav-compact {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .brand {
@@ -1244,16 +1248,29 @@ strong {
 }
 
 .doc-header {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.doc-header .title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.doc-header .subtitle {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #9da8bf;
+  letter-spacing: 0.01em;
 }
 
 .doc-body {
-  background: rgba(8, 14, 28, 0.88);
-  border: 1px solid rgba(0, 240, 255, 0.18);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(12px);
+  background: rgba(8, 14, 28, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
   padding: 2rem;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 .doc-body code {
   background: rgba(15, 23, 42, 0.85);
@@ -1323,14 +1340,14 @@ strong {
 }
 
 .doc-menu {
-  background: rgba(8, 14, 28, 0.88);
-  border: 1px solid rgba(0, 240, 255, 0.18);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(12px);
+  background: rgba(8, 14, 28, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
   padding: 1.5rem;
-  border-radius: 4px;
+  border-radius: 6px;
   position: sticky;
-  top: 2rem;
+  top: 1.5rem;
 }
 
 .doc-menu-section + .doc-menu-section {
@@ -1383,4 +1400,41 @@ strong {
 .doc-menu-link.is-active, .doc-menu-link:hover {
   opacity: 1;
   color: #00f0ff;
+}
+
+.footer-section {
+  position: relative;
+  z-index: 1;
+  margin-top: 4rem;
+  padding: 3rem 0;
+  border-top: 1px solid rgba(0, 240, 255, 0.1);
+  background: rgba(10, 14, 23, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.footer-section-item {
+  flex: 1;
+}
+
+.footer-text {
+  font-size: 0.9rem;
+  color: #7a8baa;
+  margin: 0;
+}
+
+.footer-link {
+  color: #00f0ff;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #66f5ff;
 }
