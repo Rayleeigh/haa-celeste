@@ -1,0 +1,24 @@
+[
+  {
+    "id": "homelab",
+    "name": "Homelab",
+    "title": "Homelab Infrastructure",
+    "description": "Comprehensive documentation of the self-hosted environment, including network topology, service catalog, and security policies.",
+    "link": "homelab.html",
+    "link_text": "ACCESS TERMINAL",
+    "type": "homelab",
+    "lat": -15,
+    "lon": -55
+  },
+  {
+    "id": "Celeste",
+    "name": "Celeste",
+    "title": "Protocol Celeste",
+    "description": "",
+    "link": "https://github.com/Rayleeigh/haa-celeste",
+    "link_text": "INITIATE PROTOCOL",
+    "type": "project",
+    "lat": 40,
+    "lon": -74
+  }
+]

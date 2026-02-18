@@ -1,0 +1,26 @@
+[
+  {
+    "id": "automation",
+    "name": "Automation Protocol",
+    "description": "Automated scripts, workflows, or tools designed to streamline tasks and processes.",
+    "icon": "mission-icons/automation.png"
+  },
+  {
+    "id": "application",
+    "name": "Application Development",
+    "description": "Active software development project or research initiative.",
+    "icon": "mission-icons/application.png"
+  },
+  {
+    "id": "coaching",
+    "name": "Coaching & Mentorship",
+    "description": "Guidance and support provided to individuals or teams in their learning and development journey.",
+    "icon": "mission-icons/coaching.png"
+  },
+  {
+    "id": "documentation",
+    "name": "Documentation & Knowledge Sharing",
+    "description": "Creation and maintenance of comprehensive documentation, guides, or knowledge bases to facilitate learning and information sharing.",
+    "icon": "mission-icons/documentation.png"
+  }
+]

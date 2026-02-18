@@ -4,16 +4,27 @@ This document describes the architecture, workflows, and automation that power t
 
 ## Project Overview
 
-The repository is a static site built from HTML, SCSS/CSS, and JavaScript. It ships a landing page plus a documentation hub that renders Markdown into HTML in the browser.
+The repository is a static site built from HTML, SCSS/CSS, and JavaScript. It features an interactive 3D Globe interface for the landing page and a documentation hub that renders Markdown into HTML in the browser.
 
 Primary pages:
-- `index.html`: landing page.
+- `index.html`: landing page (Globe Mission Select).
 - `homelab.html`: documentation hub.
+- `data/`: JSON configuration files driving the content.
 
 Key scripts:
 - `scripts/generate_homelab_index.py`: builds the docs index from the filesystem.
 - `scripts/manage_release.py`: bumps version + builds release notes in CI.
 - `scripts/local_release.py`: local release helper (commit + push).
+- `scripts/create_mission.py`: CLI tool to add new missions to `data/missions.json`.
+
+## Data-Driven Architecture
+
+The landing page content is dynamically loaded from JSON files in the `data/` directory:
+
+- **`data/missions.json`**: Defines the points on the globe. Each entry includes coordinates, metadata, and links.
+- **`data/stack.json`**: Defines the "Arsenal" (Tech Stack) icons displayed in the operator panel.
+
+This allows for content updates without modifying the core HTML structure.
 
 ## Homelab Documentation System
 

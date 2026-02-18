@@ -6,14 +6,8 @@
   const CAMERA_DISTANCE = 7;
   const FLY_DURATION = 1200; // ms
 
-  const MISSIONS = [
-    { id: "about",    label: "About Me",    desc: "Who I am & what I do",       lat: 40,  lon: -100, tpl: "tpl-about",    title: "OPERATIVE DOSSIER" },
-    { id: "projects", label: "Projects",    desc: "Featured repositories",      lat: 50,  lon: 10,   tpl: "tpl-projects", title: "ACTIVE OPERATIONS" },
-    { id: "stack",    label: "Tech Stack",  desc: "Languages, tools & infra",   lat: 35,  lon: 105,  tpl: "tpl-stack",    title: "ARSENAL" },
-    { id: "homelab",  label: "Homelab",     desc: "Self-hosted documentation",  lat: -15, lon: -55,  tpl: "tpl-homelab",  title: "BASE OF OPERATIONS" },
-    { id: "naming",   label: "Naming",      desc: "HAA naming convention",      lat: 5,   lon: 25,   tpl: "tpl-naming",   title: "DESIGNATION PROTOCOL" },
-    { id: "contact",  label: "Contact",     desc: "Get in touch",               lat: -30, lon: 135,  tpl: "tpl-contact",  title: "COMMS CHANNEL" },
-  ];
+  let MISSIONS = [];
+  let MISSION_TYPES = {};
 
   /* ─── Helpers ─────────────────────────────────────────── */
   function latLonToVec3(lat, lon, r) {
@@ -34,12 +28,12 @@
   const container = document.getElementById("globe-container");
   const scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
   camera.position.set(0, 1, CAMERA_DISTANCE);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setClearColor(0x0a0e17, 1);
   container.appendChild(renderer.domElement);
 
@@ -50,8 +44,8 @@
   controls.enableZoom = false;
   controls.enablePan = false;
   controls.rotateSpeed = 0.4;
-  controls.minPolarAngle = Math.PI * 0.2;
-  controls.maxPolarAngle = Math.PI * 0.8;
+  controls.minPolarAngle = 0; // Allow full rotation by poles
+  controls.maxPolarAngle = Math.PI;
 
   /* ─── Lighting ────────────────────────────────────────── */
   const ambientLight = new THREE.AmbientLight(0x334466, 0.6);
@@ -83,6 +77,8 @@
     transparent: true,
     opacity: 0.85,
     shininess: 5,
+    depthWrite: true, // Help with occlusion
+    depthTest: true,
   });
   const innerSphere = new THREE.Mesh(innerGeo, innerMat);
   globeGroup.add(innerSphere);
@@ -150,47 +146,150 @@
   const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.6 });
   scene.add(new THREE.Points(starGeo, starMat));
 
-  /* ─── Mission Markers (3D) ────────────────────────────── */
+  /* ─── Mission Markers (Shader) ────────────────────────── */
   const markerMeshes = [];
   const markerGeo = new THREE.SphereGeometry(MARKER_SIZE, 16, 16);
 
-  MISSIONS.forEach((m) => {
-    const pos = latLonToVec3(m.lat, m.lon, GLOBE_RADIUS + 0.04);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.9 });
-    const mesh = new THREE.Mesh(markerGeo, mat);
-    mesh.position.copy(pos);
-    mesh.userData = m;
-    globeGroup.add(mesh);
-    markerMeshes.push(mesh);
+  // Custom shader for Glitch/Ping effect (reused for all markers)
+  const markerShaderMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uSelected: { value: 0.0 }, // 0 = glitch, 1 = ping
+      uColor: { value: new THREE.Color(0x00f0ff) }
+    },
+    vertexShader: `
+      uniform float uTime;
+      uniform float uSelected;
+      varying vec2 vUv;
+      varying float vNoise;
+      
+      float rand(vec2 co){
+          return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+      }
 
-    // Pillar line from surface
-    const pillarGeo = new THREE.BufferGeometry().setFromPoints([
-      latLonToVec3(m.lat, m.lon, GLOBE_RADIUS),
-      latLonToVec3(m.lat, m.lon, GLOBE_RADIUS + 0.18),
-    ]);
-    const pillarMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.35 });
-    globeGroup.add(new THREE.Line(pillarGeo, pillarMat));
+      void main() {
+        vUv = uv;
+        vec3 pos = position;
+        
+        if (uSelected < 0.5) {
+          // Glitch / Static Jitter
+          float noise = rand(vec2(uTime * 0.5, position.y));
+          vNoise = noise;
+          if (noise > 0.92) {
+            pos += normal * (rand(vec2(uTime, position.z)) - 0.5) * 0.15;
+          }
+        } else {
+          // Ping Pulse
+          float pulse = 1.0 + sin(uTime * 4.0) * 0.15;
+          pos *= pulse;
+        }
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uSelected;
+      uniform vec3 uColor;
+      varying float vNoise;
+
+      void main() {
+        vec3 color = uColor;
+        float alpha = 0.9;
+        
+        if (uSelected < 0.5) {
+          // Static flicker
+          float flicker = sin(uTime * 20.0 + vNoise * 10.0);
+          if (flicker > 0.8) alpha = 0.5;
+          if (mod(gl_FragCoord.y, 4.0) < 2.0) alpha *= 0.7; // Scanline
+        } else {
+          // Selected glow
+          alpha = 1.0;
+          color += vec3(0.3) * sin(uTime * 4.0);
+        }
+        gl_FragColor = vec4(color, alpha);
+      }
+    `,
+    transparent: true
   });
+
+  function initMissions(missionsData, typesData) {
+    // Create lookup map for types
+    typesData.forEach(t => MISSION_TYPES[t.id] = t);
+
+    // Merge type data into missions
+    MISSIONS = missionsData.map(m => {
+      const typeDef = MISSION_TYPES[m.type] || { icon: '', name: 'Unknown', description: '' };
+      // Attach type info to the mission object for easy access
+      return { ...m, icon: typeDef.icon, typeName: typeDef.name, typeDesc: typeDef.description };
+    });
+    
+    MISSIONS.forEach((m) => {
+      const pos = latLonToVec3(m.lat, m.lon, GLOBE_RADIUS + 0.04);
+      
+      // Clone material so each marker has independent uniforms
+      const mat = markerShaderMat.clone();
+      const mesh = new THREE.Mesh(markerGeo, mat);
+      mesh.position.copy(pos);
+      mesh.userData = m;
+      globeGroup.add(mesh);
+      markerMeshes.push(mesh);
+
+      // Pillar line from surface
+      const pillarGeo = new THREE.BufferGeometry().setFromPoints([
+        latLonToVec3(m.lat, m.lon, GLOBE_RADIUS),
+        latLonToVec3(m.lat, m.lon, GLOBE_RADIUS + 0.18),
+      ]);
+      const pillarMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.35 });
+      globeGroup.add(new THREE.Line(pillarGeo, pillarMat));
+    });
+
+    initLabels();
+    initQuickSelect();
+  }
+
+  // Fetch missions and types in parallel
+  Promise.all([
+    fetch('data/missions.json').then(r => r.json()),
+    fetch('data/mission_types.json').then(r => r.json())
+  ]).then(([missions, types]) => initMissions(missions, types))
+    .catch(e => console.error("Failed to load mission data:", e));
+
+  /* ─── Tech Stack (Arsenal) ────────────────────────────── */
+  function initStack(data) {
+    const container = document.getElementById("stack-list");
+    if (!container) return;
+    
+    container.innerHTML = data.map(item => `
+      <img src="https://skillicons.dev/icons?i=${item.icon}" alt="${item.name}" title="${item.name}" />
+    `).join('');
+  }
+
+  // Fetch stack from data directory
+  fetch('data/stack.json')
+    .then(r => r.json())
+    .then(data => initStack(data))
+    .catch(e => console.error("Failed to load stack:", e));
 
   /* ─── HTML Mission Labels ─────────────────────────────── */
   const labelContainer = document.getElementById("mission-labels");
   const labelElements = {};
 
-  MISSIONS.forEach((m) => {
-    const el = document.createElement("div");
-    el.className = "mission-label";
-    el.dataset.mission = m.id;
-    el.innerHTML = `
-      <span class="mission-name">${m.label}</span>
-      <span class="mission-desc">${m.desc}</span>
-    `;
-    el.addEventListener("click", () => {
-      selectMission(m.id);
-      dismissHint();
+  function initLabels() {
+    MISSIONS.forEach((m) => {
+      const el = document.createElement("div");
+      el.className = "mission-label";
+      el.dataset.mission = m.id;
+      el.innerHTML = `
+        <span class="mission-name">${m.name}</span>
+      `;
+      el.addEventListener("click", () => {
+        selectMission(m.id);
+        dismissHint();
+      });
+      labelContainer.appendChild(el);
+      labelElements[m.id] = el;
     });
-    labelContainer.appendChild(el);
-    labelElements[m.id] = el;
-  });
+  }
 
   /* ─── Quick Select Sidebar ────────────────────────────── */
   const qsToggle = document.getElementById("quickselect-toggle");
@@ -199,23 +298,24 @@
   const qsList = document.getElementById("quickselect-list");
   const qsItems = {};
 
-  MISSIONS.forEach((m, i) => {
-    const li = document.createElement("li");
-    li.className = "qs-item";
-    li.dataset.mission = m.id;
-    li.innerHTML = `
-      <span class="qs-index">${String(i + 1).padStart(2, "0")}</span>
-      <span class="qs-item-label">${m.label}</span>
-      <span class="qs-item-desc">${m.desc}</span>
-    `;
-    li.addEventListener("click", () => {
-      selectMission(m.id);
-      dismissHint();
-      closeQuickSelect();
+  function initQuickSelect() {
+    MISSIONS.forEach((m, i) => {
+      const li = document.createElement("li");
+      li.className = "qs-item";
+      li.dataset.mission = m.id;
+      li.innerHTML = `
+        <span class="qs-index">${String(i + 1).padStart(2, "0")}</span>
+        <span class="qs-item-label">${m.name}</span>
+      `;
+      li.addEventListener("click", () => {
+        selectMission(m.id);
+        dismissHint();
+        closeQuickSelect();
+      });
+      qsList.appendChild(li);
+      qsItems[m.id] = li;
     });
-    qsList.appendChild(li);
-    qsItems[m.id] = li;
-  });
+  }
 
   function openQuickSelect() {
     qsPanel.classList.remove("qs-hidden");
@@ -233,34 +333,6 @@
 
   qsClose.addEventListener("click", closeQuickSelect);
 
-  /* ─── Prev / Next Navigation ────────────────────────── */
-  const prevBtn = document.getElementById("briefing-prev");
-  const nextBtn = document.getElementById("briefing-next");
-  const prevLabel = document.getElementById("prev-label");
-  const nextLabel = document.getElementById("next-label");
-  const counterEl = document.getElementById("briefing-counter");
-
-  function updateNavLabels(currentIdx) {
-    const prevIdx = (currentIdx - 1 + MISSIONS.length) % MISSIONS.length;
-    const nextIdx = (currentIdx + 1) % MISSIONS.length;
-    prevLabel.textContent = MISSIONS[prevIdx].label;
-    nextLabel.textContent = MISSIONS[nextIdx].label;
-    counterEl.textContent = `${currentIdx + 1} / ${MISSIONS.length}`;
-  }
-
-  prevBtn.addEventListener("click", () => {
-    if (!activeMission) return;
-    const idx = MISSIONS.findIndex((m) => m.id === activeMission);
-    const prevIdx = (idx - 1 + MISSIONS.length) % MISSIONS.length;
-    selectMission(MISSIONS[prevIdx].id);
-  });
-
-  nextBtn.addEventListener("click", () => {
-    if (!activeMission) return;
-    const idx = MISSIONS.findIndex((m) => m.id === activeMission);
-    const nextIdx = (idx + 1) % MISSIONS.length;
-    selectMission(MISSIONS[nextIdx].id);
-  });
 
   /* ─── Onboarding Hint ─────────────────────────────────── */
   const hint = document.createElement("div");
@@ -282,8 +354,8 @@
   const mouse = new THREE.Vector2();
 
   renderer.domElement.addEventListener("click", (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    mouse.x = (e.clientX / container.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / container.clientHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     const hits = raycaster.intersectObjects(markerMeshes);
     if (hits.length > 0) {
@@ -293,8 +365,8 @@
 
   /* ─── Hover cursor ────────────────────────────────────── */
   renderer.domElement.addEventListener("mousemove", (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    mouse.x = (e.clientX / container.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / container.clientHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     const hits = raycaster.intersectObjects(markerMeshes);
     renderer.domElement.style.cursor = hits.length > 0 ? "pointer" : "grab";
@@ -337,10 +409,11 @@
   }
 
   /* ─── Briefing Panel Logic ────────────────────────────── */
-  const briefingPanel = document.getElementById("briefing-panel");
-  const briefingTitle = document.getElementById("briefing-title");
-  const briefingBody = document.getElementById("briefing-body");
-  const briefingClose = document.getElementById("briefing-close");
+  const viewOperator = document.getElementById("view-operator");
+  const viewMission = document.getElementById("view-mission");
+  const missionTitle = document.getElementById("mission-title");
+  const missionBody = document.getElementById("mission-body-content");
+  const missionBackBtn = document.getElementById("mission-back-btn");
   let activeMission = null;
 
   function selectMission(id) {
@@ -368,25 +441,58 @@
     // Update marker colors
     markerMeshes.forEach((mesh) => {
       const isActive = mesh.userData.id === id;
-      mesh.material.color.setHex(isActive ? 0xff6b35 : 0x00f0ff);
+      mesh.material.uniforms.uSelected.value = isActive ? 1.0 : 0.0;
+      mesh.material.uniforms.uColor.value.setHex(isActive ? 0xff6b35 : 0x00f0ff);
     });
 
-    // Update prev/next labels
-    const currentIdx = MISSIONS.findIndex((m) => m.id === id);
-    updateNavLabels(currentIdx);
+    // Populate Mission View
+    missionTitle.textContent = (mission.title || mission.name).toUpperCase();
+    
+    // Inject Icon and Description
+    missionBody.innerHTML = `
+      <div class="mission-brief-container">
+        <div class="mission-icon-wrapper">
+          <img src="${mission.icon}" class="mission-brief-icon" alt="Mission Icon" onerror="this.style.display='none'"/>
+          <div class="mission-type-tooltip">
+            <div class="type-title">${mission.typeName}</div>
+            <div class="type-desc">${mission.typeDesc}</div>
+          </div>
+        </div>
+        
+        <div class="mission-data-grid">
+          <div class="mission-data-row">
+            <span class="mission-data-label">CODENAME</span>
+            <span class="mission-data-value">${mission.name}</span>
+          </div>
+          <div class="mission-data-row">
+            <span class="mission-data-label">OPERATION</span>
+            <span class="mission-data-value">${mission.title}</span>
+          </div>
+          <div class="mission-data-row">
+            <span class="mission-data-label">COORDS</span>
+            <span class="mission-data-value">${mission.lat.toFixed(2)}, ${mission.lon.toFixed(2)}</span>
+          </div>
+          <div class="mission-data-row">
+            <span class="mission-data-label">LINK</span>
+            <a href="${mission.link}" target="_blank" class="mission-data-link">${mission.link}</a>
+          </div>
+        </div>
 
-    // Load template content
-    const tpl = document.getElementById(mission.tpl);
-    if (tpl) {
-      briefingBody.innerHTML = "";
-      briefingBody.appendChild(tpl.content.cloneNode(true));
+        <div class="mission-brief-text">
+          <span class="mission-data-label">BRIEFING</span>
+          <p>${mission.description}</p>
+        </div>
+      </div>
+    `;
 
-      // Sync data to panel (for dynamically populated fields)
-      syncPanelData();
-    }
+    // Update Action Button
+    const actionBtn = document.getElementById("mission-action-btn");
+    actionBtn.href = mission.link || "#";
+    actionBtn.textContent = (mission.link_text || "INITIATE PROTOCOL").toUpperCase();
 
-    briefingTitle.textContent = mission.title;
-    briefingPanel.classList.remove("panel-hidden");
+    // Switch Views
+    viewOperator.classList.remove("active");
+    viewMission.classList.add("active");
 
     // Animate HUD coordinates
     animateCoords(mission.lat, mission.lon);
@@ -396,21 +502,22 @@
   }
 
   function closeBriefing() {
-    briefingPanel.classList.add("panel-hidden");
+    viewMission.classList.remove("active");
+    viewOperator.classList.add("active");
     activeMission = null;
 
     Object.values(labelElements).forEach((el) => el.classList.remove("active"));
     Object.values(qsItems).forEach((el) => el.classList.remove("qs-active"));
-    markerMeshes.forEach((mesh) => mesh.material.color.setHex(0x00f0ff));
+    markerMeshes.forEach((mesh) => {
+      mesh.material.uniforms.uSelected.value = 0.0;
+      mesh.material.uniforms.uColor.value.setHex(0x00f0ff);
+    });
 
-    // Animate coords back to the default mission (about)
-    const defaultMission = MISSIONS.find((m) => m.id === "about");
-    if (defaultMission) {
-      animateCoords(defaultMission.lat, defaultMission.lon);
-    }
+    // Reset coords to 0,0 or keep last
+    animateCoords(0, 0);
   }
 
-  briefingClose.addEventListener("click", closeBriefing);
+  missionBackBtn.addEventListener("click", closeBriefing);
 
   // ESC to close
   document.addEventListener("keydown", (e) => {
@@ -521,8 +628,8 @@
 
   /* ─── Project Label Positions to 2D ───────────────────── */
   function updateLabels() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
 
     MISSIONS.forEach((m) => {
       const pos3 = latLonToVec3(m.lat, m.lon, GLOBE_RADIUS + 0.2);
@@ -543,7 +650,11 @@
       const cameraDir = camera.position.clone().normalize();
       const markerDir = worldPos.clone().normalize();
       const dot = cameraDir.dot(markerDir);
-      el.classList.toggle("behind-globe", dot < 0.15);
+      
+      // Check if behind globe OR occluded by right panel (30% width)
+      const isBehindGlobe = dot < 0.15;
+      const isOccludedByPanel = x > window.innerWidth * 0.68;
+      el.classList.toggle("behind-globe", isBehindGlobe || isOccludedByPanel);
     });
   }
 
@@ -558,9 +669,9 @@
 
   /* ─── Resize ──────────────────────────────────────────── */
   window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(container.clientWidth, container.clientHeight);
   });
 
   /* ─── Animate Loop ────────────────────────────────────── */
@@ -573,10 +684,23 @@
       globeGroup.rotation.y += AUTO_ROTATE_SPEED;
     }
 
-    // Pulse markers
+    // Update markers (Uniforms + Occlusion)
     markerMeshes.forEach((mesh, i) => {
-      const scale = 1 + Math.sin(time * 2 + i * 1.2) * 0.2;
-      mesh.scale.setScalar(scale);
+      // Update shader time
+      mesh.material.uniforms.uTime.value = time;
+
+      // Occlusion Logic: Hide if behind globe
+      const worldPos = mesh.position.clone();
+      globeGroup.localToWorld(worldPos);
+      
+      // Vector from camera to mesh
+      const viewVector = worldPos.clone().sub(camera.position);
+      // Normal at mesh position (approximate for sphere)
+      const normal = worldPos.clone().normalize();
+      
+      // If dot product is positive, the surface is facing away from camera
+      const dot = viewVector.dot(normal);
+      mesh.visible = dot < 0.2; // Threshold to hide slightly before horizon
     });
 
     controls.update();
@@ -585,9 +709,6 @@
   }
 
   animate();
-
-  // Select "About Me" as default mission on load
-  setTimeout(() => selectMission("about"), 300);
 
   // Expose selectMission globally for potential external use
   window.selectMission = selectMission;

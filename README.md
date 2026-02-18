@@ -27,6 +27,7 @@ Welcome to my homelab documentation. This space captures the systems, services, 
 ## Repository Structure
 
 - `index.html` is the landing page.
+- `data/` contains JSON configuration files (`missions.json`, `stack.json`).
 - `homelab.html` is the documentation hub.
 - `homelab-docs/<category>/` holds markdown docs grouped by category.
 - `homelab-docs/landing.md` is the docs landing page.

@@ -11,11 +11,166 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
+  <style>
+    /* Layout Overhaul Styles */
+    body {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #0a0e17;
+    }
+    #main-layout {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    #globe-container {
+      width: 70%;
+      height: 100%;
+      position: relative;
+      order: 1;
+    }
+    #operator-panel {
+      width: 30%;
+      height: 100%;
+      background: rgba(10, 14, 23, 0.8);
+      border-left: 1px solid rgba(0, 240, 255, 0.15);
+      position: relative;
+      order: 2;
+      padding: 110px 2rem 8rem 2rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start; /* Align content to top */
+      backdrop-filter: blur(10px);
+    }
+    /* Override HQ Panel to fit in sidebar */
+    #hq-panel {
+      position: static !important;
+      width: 100% !important;
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      pointer-events: auto;
+    }
+    /* Fix: Hide the floating "HQ // COMMAND" label (orange splatter) */
+    #hq-panel::before {
+      display: none !important;
+    }
+    /* Ensure HUD overlays correctly but doesn't block clicks where not needed */
+    #hud-overlay {
+      pointer-events: none;
+    }
+    #hud-overlay > * {
+      pointer-events: auto;
+    }
+    /* Adjust scanlines to cover everything */
+    .scanlines {
+      z-index: 2;
+      pointer-events: none;
+    }
+    /* Mission Briefing Styles */
+    .mission-brief-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .mission-brief-icon {
+      width: 128px;
+      height: 128px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.3));
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Three.js Globe -->
-  <div id="globe-container"></div>
+  <div id="main-layout">
+    <!-- Three.js Globe (Left 70%) -->
+    <div id="globe-container"></div>
+
+    <!-- Operator Info (Right 30%) -->
+    <aside id="operator-panel">
+      
+      <!-- VIEW 1: OPERATOR DASHBOARD (Default) -->
+      <div id="view-operator" class="panel-view active">
+        <!-- HQ Header -->
+        <div id="hq-panel">
+          <div class="hq-header">
+            <div class="hq-avatar">
+              <img class="avatar-img" id="avatar-img" alt="Profile avatar" />
+            </div>
+            <div class="hq-info">
+              <p class="hq-name" id="profile-name">Rayleeigh</p>
+              <p class="hq-role" id="profile-role">GitHub @Rayleeigh</p>
+            </div>
+          </div>
+          <div class="hq-stats">
+            <div class="hq-stat">
+              <span class="hq-stat-value" id="stat-repos">0</span>
+              <span class="hq-stat-label">REPOS</span>
+            </div>
+            <div class="hq-stat">
+              <span class="hq-stat-value" id="stat-followers">0</span>
+              <span class="hq-stat-label">FOLLOWERS</span>
+            </div>
+            <div class="hq-stat">
+              <span class="hq-stat-value" id="stat-following">0</span>
+              <span class="hq-stat-label">FOLLOWING</span>
+            </div>
+          </div>
+          <a class="hq-btn" id="github-link" href="https://github.com/Rayleeigh" target="_blank">VIEW GITHUB PROFILE</a>
+        </div>
+
+        <!-- Operator Sections (Accordion/List) -->
+        <div class="operator-sections">
+          <div class="op-section">
+            <h3 class="op-section-title">OPERATIVE DOSSIER</h3>
+            <div class="op-section-content">
+              <p class="brief-text">
+                <strong>Rayleeigh</strong> — IT professional focused on building dependable systems.
+                Designs automation and infrastructure with clarity and resilience.
+              </p>
+            </div>
+          </div>
+
+          <div class="op-section">
+            <h3 class="op-section-title">ARSENAL (STACK)</h3>
+            <div class="op-section-content">
+              <div class="brief-icons" id="stack-list">
+                <!-- Populated by globe.js from data/stack.json -->
+              </div>
+            </div>
+          </div>
+
+          <div class="op-section">
+            <h3 class="op-section-title">COMMS CHANNEL</h3>
+            <div class="op-section-content">
+              <a class="brief-btn" id="panel-email" href="mailto:hello@example.com">SEND TRANSMISSION</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: MISSION BRIEFING (Hidden by default) -->
+      <div id="view-mission" class="panel-view">
+        <div class="mission-header">
+          <button class="mission-back-btn" id="mission-back-btn">&lt; RETURN TO COMMAND</button>
+          <h2 class="mission-title" id="mission-title">MISSION TITLE</h2>
+        </div>
+        <div class="mission-body-content" id="mission-body-content">
+          <!-- Content injected via JS -->
+        </div>
+        <div class="mission-actions">
+          <a href="#" class="hq-btn" id="mission-action-btn">INITIATE PROTOCOL</a>
+        </div>
+      </div>
+    </aside>
+  </div>
 
   <!-- Scanline overlay -->
   <div class="scanlines"></div>
@@ -59,62 +214,6 @@
     </ul>
   </aside>
 
-  <!-- HQ Panel (always visible, bottom-left) -->
-  <div id="hq-panel">
-    <div class="hq-header">
-      <div class="hq-avatar">
-        <img class="avatar-img" id="avatar-img" alt="Profile avatar" />
-      </div>
-      <div class="hq-info">
-        <p class="hq-name" id="profile-name">Rayleeigh</p>
-        <p class="hq-role" id="profile-role">GitHub @Rayleeigh</p>
-      </div>
-    </div>
-    <div class="hq-stats">
-      <div class="hq-stat">
-        <span class="hq-stat-value" id="stat-repos">0</span>
-        <span class="hq-stat-label">REPOS</span>
-      </div>
-      <div class="hq-stat">
-        <span class="hq-stat-value" id="stat-followers">0</span>
-        <span class="hq-stat-label">FOLLOWERS</span>
-      </div>
-      <div class="hq-stat">
-        <span class="hq-stat-value" id="stat-following">0</span>
-        <span class="hq-stat-label">FOLLOWING</span>
-      </div>
-    </div>
-    <a class="hq-btn" id="github-link" href="https://github.com/Rayleeigh" target="_blank">VIEW GITHUB PROFILE</a>
-  </div>
-
-  <!-- Briefing Panel (hidden, slides in from right) -->
-  <div id="briefing-panel" class="panel-hidden">
-    <div class="briefing-header">
-      <div class="briefing-title-row">
-        <span class="briefing-icon"></span>
-        <h2 class="briefing-title" id="briefing-title">MISSION BRIEFING</h2>
-      </div>
-      <button class="briefing-close" id="briefing-close" aria-label="Close panel">
-        <span></span><span></span>
-      </button>
-    </div>
-    <div class="briefing-scanline"></div>
-    <div class="briefing-body" id="briefing-body">
-      <!-- Content injected by JS -->
-    </div>
-    <div class="briefing-nav">
-      <button class="briefing-nav-btn" id="briefing-prev" aria-label="Previous mission">
-        <span class="nav-arrow">&larr;</span>
-        <span class="nav-label" id="prev-label">PREV</span>
-      </button>
-      <span class="briefing-nav-counter" id="briefing-counter">1 / 6</span>
-      <button class="briefing-nav-btn" id="briefing-next" aria-label="Next mission">
-        <span class="nav-label" id="next-label">NEXT</span>
-        <span class="nav-arrow">&rarr;</span>
-      </button>
-    </div>
-  </div>
-
   <!-- Hidden data containers for main.js compatibility -->
   <div id="hidden-data" style="display:none">
     <span id="hero-title"></span>
@@ -136,142 +235,9 @@
     <div id="repo-list"></div>
   </div>
 
-  <!-- Section content templates (hidden, used by panel system) -->
-  <template id="tpl-about">
-    <div class="brief-section">
-      <p class="brief-label">CLASSIFICATION</p>
-      <h3 class="brief-heading">Operative Dossier</h3>
-      <div class="brief-divider"></div>
-      <p class="brief-text">
-        <strong>Rayleeigh</strong> — IT professional focused on building dependable systems that
-        simplify everyday life. Designs automation and infrastructure with clarity, resilience, and
-        long-term maintainability.
-      </p>
-      <div class="brief-grid">
-        <div class="brief-field">
-          <span class="brief-field-label">SPECIALIZATIONS</span>
-          <ul class="brief-list">
-            <li>Home Automation</li>
-            <li>Self-Hosting</li>
-            <li>Advancement Projects</li>
-            <li>IT Infrastructure + Automation</li>
-          </ul>
-        </div>
-        <div class="brief-field">
-          <span class="brief-field-label">INTEL</span>
-          <div class="brief-info-row">
-            <span class="brief-info-label">LOCATION</span>
-            <span class="brief-info-value" id="panel-location">Loading</span>
-          </div>
-          <div class="brief-info-row">
-            <span class="brief-info-label">UNIT</span>
-            <span class="brief-info-value" id="panel-company">Loading</span>
-          </div>
-          <div class="brief-info-row">
-            <span class="brief-info-label">COMMS</span>
-            <span class="brief-info-value" id="panel-website">Loading</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-projects">
-    <div class="brief-section">
-      <p class="brief-label">FIELD OPERATIONS</p>
-      <h3 class="brief-heading">Active Operations</h3>
-      <div class="brief-divider"></div>
-      <div class="brief-repo-grid" id="panel-repo-list">
-        <p class="brief-text brief-loading">Retrieving operation data...</p>
-      </div>
-      <a class="brief-btn" id="panel-all-repos" href="https://github.com/Rayleeigh?tab=repositories" target="_blank">VIEW ALL OPERATIONS</a>
-    </div>
-  </template>
-
-  <template id="tpl-stack">
-    <div class="brief-section">
-      <p class="brief-label">EQUIPMENT MANIFEST</p>
-      <h3 class="brief-heading">Arsenal</h3>
-      <div class="brief-divider"></div>
-      <div class="brief-grid brief-grid-3">
-        <div class="brief-field">
-          <span class="brief-field-label">LANGUAGES</span>
-          <p class="brief-text-sm">Scripting, automation, and systems glue.</p>
-          <div class="brief-icons">
-            <img src="https://skillicons.dev/icons?i=python" alt="Python" />
-            <img src="https://skillicons.dev/icons?i=bash" alt="Bash" />
-            <img src="https://skillicons.dev/icons?i=powershell" alt="PowerShell" />
-          </div>
-        </div>
-        <div class="brief-field">
-          <span class="brief-field-label">DEVOPS / HOSTING</span>
-          <p class="brief-text-sm">Reliable services and infrastructure.</p>
-          <div class="brief-icons">
-            <img src="https://skillicons.dev/icons?i=docker" alt="Docker" />
-            <img src="https://skillicons.dev/icons?i=nginx" alt="Nginx" />
-            <img src="https://skillicons.dev/icons?i=cloudflare" alt="Cloudflare" />
-            <img src="https://skillicons.dev/icons?i=github" alt="GitHub" />
-            <img src="https://skillicons.dev/icons?i=git" alt="Git" />
-            <img src="https://skillicons.dev/icons?i=linux" alt="Linux" />
-          </div>
-        </div>
-        <div class="brief-field">
-          <span class="brief-field-label">DATABASES</span>
-          <p class="brief-text-sm">Data stores that keep everything running.</p>
-          <div class="brief-icons">
-            <img src="https://skillicons.dev/icons?i=mysql" alt="MySQL" />
-            <img src="https://skillicons.dev/icons?i=postgres" alt="PostgreSQL" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-homelab">
-    <div class="brief-section">
-      <p class="brief-label">CLASSIFIED INFRASTRUCTURE</p>
-      <h3 class="brief-heading">Base of Operations</h3>
-      <div class="brief-divider"></div>
-      <p class="brief-text">
-        Running documentation of services, automation, and infrastructure updates.
-        Docs render directly in the browser for quick updates and clean reading.
-      </p>
-      <a class="brief-btn" href="homelab.html">ACCESS BASE DOCUMENTATION</a>
-    </div>
-  </template>
-
-  <template id="tpl-naming">
-    <div class="brief-section">
-      <p class="brief-label">STANDARD OPERATING PROCEDURE</p>
-      <h3 class="brief-heading">Designation Protocol</h3>
-      <div class="brief-divider"></div>
-      <p class="brief-text">Every Home Automation project uses the same naming structure:</p>
-      <div class="brief-code-block">
-        <span class="mono">HAA + NAME</span>
-      </div>
-      <ul class="brief-list">
-        <li><strong>HAA</strong> — Home Automation and Advancement</li>
-        <li><strong>NAME</strong> — Project name (e.g. <span class="mono">Kuma</span>)</li>
-      </ul>
-    </div>
-  </template>
-
-  <template id="tpl-contact">
-    <div class="brief-section">
-      <p class="brief-label">SECURE CHANNEL</p>
-      <h3 class="brief-heading">Comms Channel</h3>
-      <div class="brief-divider"></div>
-      <p class="brief-text">Open to collabs, design systems, and frontend engineering.</p>
-      <div class="brief-actions">
-        <a class="brief-btn" id="panel-email" href="mailto:hello@example.com">SEND TRANSMISSION</a>
-        <a class="brief-btn brief-btn-outline" id="panel-website-link" href="https://example.com" target="_blank">WEBSITE</a>
-        <a class="brief-btn brief-btn-outline" id="panel-github" href="https://github.com/Rayleeigh" target="_blank">GITHUB</a>
-      </div>
-    </div>
-  </template>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="js/particles.js"></script>
   <script src="js/animations.js"></script>
   <script src="js/globe.js"></script>
