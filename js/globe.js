@@ -181,7 +181,6 @@
     el.className = "mission-label";
     el.dataset.mission = m.id;
     el.innerHTML = `
-      <div class="mission-dot"></div>
       <span class="mission-name">${m.label}</span>
       <span class="mission-desc">${m.desc}</span>
     `;
