@@ -9,6 +9,16 @@
           "slug": "landing"
         }
       ]
+    },
+    {
+      "title": "Celeste Documentation",
+      "slug": "celeste-documentation",
+      "docs": [
+        {
+          "title": "Technical Documentation",
+          "slug": "technical-documentation"
+        }
+      ]
     }
   ]
 }

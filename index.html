@@ -10,267 +10,269 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
   <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
-  <div class="ambient">
-    <span class="blob blob-a"></span>
-    <span class="blob blob-b"></span>
-    <span class="grid"></span>
-    <div class="dna-helix" id="dna-helix"></div>
+
+  <!-- Three.js Globe -->
+  <div id="globe-container"></div>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <!-- HUD Frame -->
+  <div id="hud-overlay">
+    <div class="hud-corner hud-tl"></div>
+    <div class="hud-corner hud-tr"></div>
+    <div class="hud-corner hud-bl"></div>
+    <div class="hud-corner hud-br"></div>
+    <div class="hud-status-bar">
+      <span class="hud-status-left">
+        <span class="hud-blink"></span>
+        SYSTEM ONLINE
+      </span>
+      <span class="hud-status-center" id="hud-date"></span>
+      <span class="hud-status-right">GALACTIC COMMAND // <span id="brand-name">Rayleeigh</span></span>
+    </div>
+    <div class="hud-bottom-bar">
+      <span>SELECT MISSION TARGET</span>
+      <span class="mono" id="hud-coords">LAT 0.00 / LON 0.00</span>
+    </div>
   </div>
 
-  <header class="site-hero section">
-    <div class="container">
-      <nav class="level nav-compact">
-        <div class="level-left">
-          <div class="level-item">
-            <div class="brand">
-              <img class="brand-logo is-hidden" id="brand-logo" alt="Brand logo" />
-              <span id="brand-initials">R</span>
-            </div>
-          </div>
-          <div class="level-item">
-            <p class="brand-text" id="brand-name">Rayleeigh</p>
-          </div>
-        </div>
-        <div class="level-right">
-          <a class="level-item nav-link" href="#projects">Projects</a>
-          <a class="level-item nav-link" href="#about">About</a>
-          <a class="level-item nav-link" href="#stack">Tech Stack</a>
-          <a class="level-item nav-link" href="#homelab">Homelab</a>
-          <a class="level-item nav-link" href="#naming">Naming</a>
-          <a class="level-item nav-link" href="#contact">Contact</a>
-        </div>
-      </nav>
+  <!-- Mission Labels (positioned via JS over globe) -->
+  <div id="mission-labels"></div>
 
-      <div class="columns is-vcentered hero-body">
-        <div class="column is-7">
-          <p class="eyebrow">GitHub Profile</p>
-          <h1 class="title is-1 hero-title" id="hero-title">Hi, I'm Rayleeigh.</h1>
-          <p class="subtitle hero-subtitle">
-            <span id="hero-bio">simply simplifying</span>
-            <br>
-            <span class="mono" id="hero-handle">@Rayleeigh</span>
-          </p>
-          <div class="hero-actions">
-            <a class="button is-primary is-medium" id="github-link" href="https://github.com/Rayleeigh">View GitHub</a>
-            <a class="button is-light is-medium" href="#projects">Featured work</a>
-          </div>
-          <div class="hero-stats">
-            <div class="stat reveal" style="animation-delay: 0.1s">
-              <p class="stat-value" id="stat-repos">0</p>
-              <p class="stat-label">Public repos</p>
-            </div>
-            <div class="stat reveal" style="animation-delay: 0.2s">
-              <p class="stat-value" id="stat-followers">0</p>
-              <p class="stat-label">Followers</p>
-            </div>
-            <div class="stat reveal" style="animation-delay: 0.3s">
-              <p class="stat-value" id="stat-following">0</p>
-              <p class="stat-label">Following</p>
-            </div>
-          </div>
-        </div>
-        <div class="column is-5">
-          <div class="profile-card reveal" style="animation-delay: 0.15s">
-            <div class="profile-header">
-              <div class="avatar">
-                <img class="avatar-img" id="avatar-img" alt="Profile avatar" />
-              </div>
-              <div>
-                <p class="profile-name" id="profile-name">Rayleeigh</p>
-                <p class="profile-role" id="profile-role">GitHub @Rayleeigh</p>
-              </div>
-            </div>
-            <div class="profile-badges" id="language-tags">
-              <span class="tag">Loading</span>
-            </div>
-            <p class="profile-note" id="profile-note">
-              Shipping thoughtful UI, clean APIs, and small tools that make teams faster.
-            </p>
-            <a class="button is-outlined is-fullwidth" id="github-link-2" href="https://github.com/Rayleeigh">Follow on GitHub</a>
-          </div>
-        </div>
+  <!-- Mission Quick Select Sidebar -->
+  <button id="quickselect-toggle" aria-label="Open mission list">
+    <span class="qs-bar"></span>
+    <span class="qs-bar"></span>
+    <span class="qs-bar"></span>
+  </button>
+  <aside id="quickselect-panel" class="qs-hidden">
+    <div class="qs-header">
+      <span class="qs-title">MISSIONS</span>
+      <button class="qs-close" id="quickselect-close" aria-label="Close mission list">&times;</button>
+    </div>
+    <ul class="qs-list" id="quickselect-list">
+      <!-- Populated by globe.js -->
+    </ul>
+  </aside>
+
+  <!-- HQ Panel (always visible, bottom-left) -->
+  <div id="hq-panel">
+    <div class="hq-header">
+      <div class="hq-avatar">
+        <img class="avatar-img" id="avatar-img" alt="Profile avatar" />
+      </div>
+      <div class="hq-info">
+        <p class="hq-name" id="profile-name">Rayleeigh</p>
+        <p class="hq-role" id="profile-role">GitHub @Rayleeigh</p>
       </div>
     </div>
-  </header>
+    <div class="hq-stats">
+      <div class="hq-stat">
+        <span class="hq-stat-value" id="stat-repos">0</span>
+        <span class="hq-stat-label">REPOS</span>
+      </div>
+      <div class="hq-stat">
+        <span class="hq-stat-value" id="stat-followers">0</span>
+        <span class="hq-stat-label">FOLLOWERS</span>
+      </div>
+      <div class="hq-stat">
+        <span class="hq-stat-value" id="stat-following">0</span>
+        <span class="hq-stat-label">FOLLOWING</span>
+      </div>
+    </div>
+    <a class="hq-btn" id="github-link" href="https://github.com/Rayleeigh" target="_blank">VIEW GITHUB PROFILE</a>
+  </div>
 
-  <section id="about" class="section section-alt">
-    <div class="container">
-      <div class="columns">
-        <div class="column is-4">
-          <p class="section-title">About Me</p>
-          <h2 class="title is-3">Systems that make everyday life smarter.</h2>
+  <!-- Briefing Panel (hidden, slides in from right) -->
+  <div id="briefing-panel" class="panel-hidden">
+    <div class="briefing-header">
+      <div class="briefing-title-row">
+        <span class="briefing-icon"></span>
+        <h2 class="briefing-title" id="briefing-title">MISSION BRIEFING</h2>
+      </div>
+      <button class="briefing-close" id="briefing-close" aria-label="Close panel">
+        <span></span><span></span>
+      </button>
+    </div>
+    <div class="briefing-scanline"></div>
+    <div class="briefing-body" id="briefing-body">
+      <!-- Content injected by JS -->
+    </div>
+    <div class="briefing-nav">
+      <button class="briefing-nav-btn" id="briefing-prev" aria-label="Previous mission">
+        <span class="nav-arrow">&larr;</span>
+        <span class="nav-label" id="prev-label">PREV</span>
+      </button>
+      <span class="briefing-nav-counter" id="briefing-counter">1 / 6</span>
+      <button class="briefing-nav-btn" id="briefing-next" aria-label="Next mission">
+        <span class="nav-label" id="next-label">NEXT</span>
+        <span class="nav-arrow">&rarr;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden data containers for main.js compatibility -->
+  <div id="hidden-data" style="display:none">
+    <span id="hero-title"></span>
+    <span id="hero-bio"></span>
+    <span id="hero-handle"></span>
+    <span id="brand-initials"></span>
+    <img id="brand-logo" class="is-hidden" alt="Brand logo" />
+    <span id="profile-note"></span>
+    <span id="profile-location"></span>
+    <span id="profile-company"></span>
+    <span id="profile-website"></span>
+    <span id="language-tags"></span>
+    <span id="contact-subtitle"></span>
+    <a id="github-link-2" href="https://github.com/Rayleeigh"></a>
+    <a id="github-link-3" href="https://github.com/Rayleeigh"></a>
+    <a id="all-repos-link" href="https://github.com/Rayleeigh?tab=repositories"></a>
+    <a id="email-link" href="mailto:hello@example.com"></a>
+    <a id="website-link" href="https://example.com"></a>
+    <div id="repo-list"></div>
+  </div>
+
+  <!-- Section content templates (hidden, used by panel system) -->
+  <template id="tpl-about">
+    <div class="brief-section">
+      <p class="brief-label">CLASSIFICATION</p>
+      <h3 class="brief-heading">Operative Dossier</h3>
+      <div class="brief-divider"></div>
+      <p class="brief-text">
+        <strong>Rayleeigh</strong> — IT professional focused on building dependable systems that
+        simplify everyday life. Designs automation and infrastructure with clarity, resilience, and
+        long-term maintainability.
+      </p>
+      <div class="brief-grid">
+        <div class="brief-field">
+          <span class="brief-field-label">SPECIALIZATIONS</span>
+          <ul class="brief-list">
+            <li>Home Automation</li>
+            <li>Self-Hosting</li>
+            <li>Advancement Projects</li>
+            <li>IT Infrastructure + Automation</li>
+          </ul>
         </div>
-        <div class="column is-8">
-          <div class="content is-medium">
-            <p>
-              I'm <strong>Rayleeigh</strong>, an IT professional focused on building dependable systems that
-              simplify everyday life. I design automation and infrastructure with clarity, resilience, and
-              long-term maintainability in mind.
-            </p>
-            <ul class="focus-list">
-              <li><strong>Home Automation</strong></li>
-              <li><strong>Self-Hosting</strong></li>
-              <li><strong>Advancement Projects</strong></li>
-              <li><strong>IT Infrastructure + Automation</strong></li>
-            </ul>
-            <div class="info-list">
-              <div class="info-item">
-                <span class="info-label">Location</span>
-                <span class="info-value" id="profile-location">Loading</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Company</span>
-                <span class="info-value" id="profile-company">Loading</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Website</span>
-                <span class="info-value" id="profile-website">Loading</span>
-              </div>
-            </div>
+        <div class="brief-field">
+          <span class="brief-field-label">INTEL</span>
+          <div class="brief-info-row">
+            <span class="brief-info-label">LOCATION</span>
+            <span class="brief-info-value" id="panel-location">Loading</span>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="stack" class="section">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="section-title">Tech Stack</p>
-          <h2 class="title is-3">Tools I lean on every week.</h2>
-        </div>
-      </div>
-      <div class="columns is-multiline stack-grid">
-        <div class="column is-4">
-          <article class="stack-card">
-            <h3 class="stack-title">Languages</h3>
-            <p class="stack-note">Scripting, automation, and systems glue.</p>
-            <div class="stack-icons">
-              <img src="https://skillicons.dev/icons?i=python" alt="Python" />
-              <img src="https://skillicons.dev/icons?i=bash" alt="Bash" />
-              <img src="https://skillicons.dev/icons?i=powershell" alt="PowerShell" />
-            </div>
-          </article>
-        </div>
-        <div class="column is-4">
-          <article class="stack-card">
-            <h3 class="stack-title">DevOps / Hosting</h3>
-            <p class="stack-note">Shipping reliable services and infrastructure.</p>
-            <div class="stack-icons">
-              <img src="https://skillicons.dev/icons?i=docker" alt="Docker" />
-              <img src="https://skillicons.dev/icons?i=nginx" alt="Nginx" />
-              <img src="https://skillicons.dev/icons?i=cloudflare" alt="Cloudflare" />
-              <img src="https://skillicons.dev/icons?i=github" alt="GitHub" />
-              <img src="https://skillicons.dev/icons?i=git" alt="Git" />
-              <img src="https://skillicons.dev/icons?i=linux" alt="Linux" />
-            </div>
-          </article>
-        </div>
-        <div class="column is-4">
-          <article class="stack-card">
-            <h3 class="stack-title">Databases</h3>
-            <p class="stack-note">Data stores that keep everything humming.</p>
-            <div class="stack-icons">
-              <img src="https://skillicons.dev/icons?i=mysql" alt="MySQL" />
-              <img src="https://skillicons.dev/icons?i=postgres" alt="PostgreSQL" />
-            </div>
-          </article>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="projects" class="section">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="section-title">Featured</p>
-          <h2 class="title is-3">Projects that show my style.</h2>
-        </div>
-        <a class="button is-light" id="all-repos-link" href="https://github.com/Rayleeigh?tab=repositories">All repos</a>
-      </div>
-      <div class="columns is-multiline" id="repo-list">
-        <div class="column is-12">
-          <article class="project-card">
-            <p class="loading">Loading repositories from GitHub...</p>
-          </article>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="homelab" class="section section-alt">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <p class="section-title">Homelab</p>
-          <h2 class="title is-3">Documentation for my self-hosted stack.</h2>
-        </div>
-        <a class="button is-light" href="homelab.html">View homelab docs</a>
-      </div>
-      <div class="columns">
-        <div class="column is-7">
-          <p class="subtitle">
-            I keep a running markdown log of services, automation, and infrastructure updates. The
-            docs render directly in the browser for quick updates and clean reading.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="naming" class="section section-alt">
-    <div class="container">
-      <div class="columns">
-        <div class="column is-5">
-          <p class="section-title">HAA Naming</p>
-          <h2 class="title is-3">Simple, consistent naming for home automation.</h2>
-        </div>
-        <div class="column is-7">
-          <div class="content is-medium">
-            <p>Every Home Automation project uses the same structure:</p>
-            <div class="naming-card">
-              <span class="mono">HAA + NAME</span>
-            </div>
-            <ul class="naming-list">
-              <li><strong>HAA</strong> stands for Home Automation and Advancement</li>
-              <li><strong>NAME</strong> is the project name (example: <span class="mono">Kuma</span>)</li>
-            </ul>
+          <div class="brief-info-row">
+            <span class="brief-info-label">UNIT</span>
+            <span class="brief-info-value" id="panel-company">Loading</span>
+          </div>
+          <div class="brief-info-row">
+            <span class="brief-info-label">COMMS</span>
+            <span class="brief-info-value" id="panel-website">Loading</span>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </template>
 
-  <section id="contact" class="section">
-    <div class="container">
-      <div class="contact-card">
-        <div>
-          <p class="section-title">Contact</p>
-          <h2 class="title is-3">Say hello or check out the latest work.</h2>
-          <p class="subtitle" id="contact-subtitle">Open to collabs, design systems, and frontend engineering.</p>
+  <template id="tpl-projects">
+    <div class="brief-section">
+      <p class="brief-label">FIELD OPERATIONS</p>
+      <h3 class="brief-heading">Active Operations</h3>
+      <div class="brief-divider"></div>
+      <div class="brief-repo-grid" id="panel-repo-list">
+        <p class="brief-text brief-loading">Retrieving operation data...</p>
+      </div>
+      <a class="brief-btn" id="panel-all-repos" href="https://github.com/Rayleeigh?tab=repositories" target="_blank">VIEW ALL OPERATIONS</a>
+    </div>
+  </template>
+
+  <template id="tpl-stack">
+    <div class="brief-section">
+      <p class="brief-label">EQUIPMENT MANIFEST</p>
+      <h3 class="brief-heading">Arsenal</h3>
+      <div class="brief-divider"></div>
+      <div class="brief-grid brief-grid-3">
+        <div class="brief-field">
+          <span class="brief-field-label">LANGUAGES</span>
+          <p class="brief-text-sm">Scripting, automation, and systems glue.</p>
+          <div class="brief-icons">
+            <img src="https://skillicons.dev/icons?i=python" alt="Python" />
+            <img src="https://skillicons.dev/icons?i=bash" alt="Bash" />
+            <img src="https://skillicons.dev/icons?i=powershell" alt="PowerShell" />
+          </div>
         </div>
-        <div class="contact-actions">
-          <a class="button is-primary" id="email-link" href="mailto:hello@example.com">Email me</a>
-          <a class="button is-light" id="website-link" href="https://example.com">Website</a>
-          <a class="button is-outlined" id="github-link-3" href="https://github.com/Rayleeigh">GitHub</a>
+        <div class="brief-field">
+          <span class="brief-field-label">DEVOPS / HOSTING</span>
+          <p class="brief-text-sm">Reliable services and infrastructure.</p>
+          <div class="brief-icons">
+            <img src="https://skillicons.dev/icons?i=docker" alt="Docker" />
+            <img src="https://skillicons.dev/icons?i=nginx" alt="Nginx" />
+            <img src="https://skillicons.dev/icons?i=cloudflare" alt="Cloudflare" />
+            <img src="https://skillicons.dev/icons?i=github" alt="GitHub" />
+            <img src="https://skillicons.dev/icons?i=git" alt="Git" />
+            <img src="https://skillicons.dev/icons?i=linux" alt="Linux" />
+          </div>
+        </div>
+        <div class="brief-field">
+          <span class="brief-field-label">DATABASES</span>
+          <p class="brief-text-sm">Data stores that keep everything running.</p>
+          <div class="brief-icons">
+            <img src="https://skillicons.dev/icons?i=mysql" alt="MySQL" />
+            <img src="https://skillicons.dev/icons?i=postgres" alt="PostgreSQL" />
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </template>
 
-  <footer class="footer">
-    <div class="content has-text-centered">
-      <p>Built with SCSS and Bulma. Data pulled from the GitHub API at runtime.</p>
+  <template id="tpl-homelab">
+    <div class="brief-section">
+      <p class="brief-label">CLASSIFIED INFRASTRUCTURE</p>
+      <h3 class="brief-heading">Base of Operations</h3>
+      <div class="brief-divider"></div>
+      <p class="brief-text">
+        Running documentation of services, automation, and infrastructure updates.
+        Docs render directly in the browser for quick updates and clean reading.
+      </p>
+      <a class="brief-btn" href="homelab.html">ACCESS BASE DOCUMENTATION</a>
     </div>
-  </footer>
+  </template>
 
+  <template id="tpl-naming">
+    <div class="brief-section">
+      <p class="brief-label">STANDARD OPERATING PROCEDURE</p>
+      <h3 class="brief-heading">Designation Protocol</h3>
+      <div class="brief-divider"></div>
+      <p class="brief-text">Every Home Automation project uses the same naming structure:</p>
+      <div class="brief-code-block">
+        <span class="mono">HAA + NAME</span>
+      </div>
+      <ul class="brief-list">
+        <li><strong>HAA</strong> — Home Automation and Advancement</li>
+        <li><strong>NAME</strong> — Project name (e.g. <span class="mono">Kuma</span>)</li>
+      </ul>
+    </div>
+  </template>
+
+  <template id="tpl-contact">
+    <div class="brief-section">
+      <p class="brief-label">SECURE CHANNEL</p>
+      <h3 class="brief-heading">Comms Channel</h3>
+      <div class="brief-divider"></div>
+      <p class="brief-text">Open to collabs, design systems, and frontend engineering.</p>
+      <div class="brief-actions">
+        <a class="brief-btn" id="panel-email" href="mailto:hello@example.com">SEND TRANSMISSION</a>
+        <a class="brief-btn brief-btn-outline" id="panel-website-link" href="https://example.com" target="_blank">WEBSITE</a>
+        <a class="brief-btn brief-btn-outline" id="panel-github" href="https://github.com/Rayleeigh" target="_blank">GITHUB</a>
+      </div>
+    </div>
+  </template>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="js/globe.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/helix.js"></script>
 </body>
 </html>

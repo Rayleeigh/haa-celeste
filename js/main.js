@@ -30,12 +30,6 @@
     return `https://${url}`;
   };
 
-  const initialsFrom = (name) => {
-    if (!name) return "";
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    return parts.map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-  };
-
   const fetchJson = (url, options = {}) =>
     fetch(url, { cache: "no-store", ...options }).then((res) => {
       if (!res.ok) {
@@ -63,144 +57,72 @@
       const company = user.company || "Independent";
       const location = user.location || "Remote";
       const website = normalizeUrl(user.blog || "");
-      const brandLogoUrl = localProfile.brand_logo_url || "";
 
-      setText("brand-name", displayName);
-      const brandLogo = $("brand-logo");
-      if (brandLogoUrl && brandLogo) {
-        brandLogo.src = brandLogoUrl;
-        brandLogo.alt = `${displayName} logo`;
-        brandLogo.classList.remove("is-hidden");
-        const brandInitials = $("brand-initials");
-        if (brandInitials) brandInitials.classList.add("is-hidden");
-        brandLogo.onerror = () => {
-          brandLogo.classList.add("is-hidden");
-          if (brandInitials) brandInitials.classList.remove("is-hidden");
-        };
-      } else {
-        setText("brand-initials", initialsFrom(displayName) || username.slice(0, 2).toUpperCase());
-      }
-      setText("hero-title", `Hi, I'm ${displayName}.`);
-      setText("hero-bio", bio);
-      setText("hero-handle", handle);
+      // HQ Panel
       setText("profile-name", displayName);
       setText("profile-role", user.company ? company : `GitHub ${handle}`);
-      setText("profile-note", bio);
-      setText("profile-location", location);
-      setText("profile-company", company);
 
       if (user.avatar_url) {
         const avatar = $("avatar-img");
-        if (avatar) avatar.src = user.avatar_url;
-        if (avatar) avatar.alt = `${displayName} avatar`;
+        if (avatar) {
+          avatar.src = user.avatar_url;
+          avatar.alt = `${displayName} avatar`;
+        }
       }
 
       setText("stat-repos", user.public_repos ?? "0");
       setText("stat-followers", user.followers ?? "0");
       setText("stat-following", user.following ?? "0");
 
+      // HUD brand name
+      setText("brand-name", displayName);
+
+      // Hidden data elements (used by panel sync)
+      setText("profile-location", location);
+      setText("profile-company", company);
+
+      const metaWebsite = $("profile-website");
+      if (metaWebsite) {
+        metaWebsite.textContent = website ? website.replace(/^https?:\/\//, "") : "Not listed";
+      }
+
+      // Links
       setLink("github-link", user.html_url);
       setLink("github-link-2", user.html_url);
       setLink("github-link-3", user.html_url);
       setLink("all-repos-link", `${user.html_url}?tab=repositories`);
-
-      const metaWebsite = $("profile-website");
-      if (metaWebsite) {
-        if (website) {
-          metaWebsite.textContent = website.replace(/^https?:\/\//, "");
-        } else {
-          metaWebsite.textContent = "Not listed";
-        }
-      }
-
       setLink("website-link", website, "Website");
       setLink("email-link", user.email ? `mailto:${user.email}` : "", "Email me");
 
+      // Meta
       const meta = document.querySelector('meta[name="description"]');
       if (meta) meta.setAttribute("content", `${displayName} on GitHub: ${bio}`);
       document.title = `${displayName} | GitHub Profile`;
 
-      const languageTags = $("language-tags");
-      if (languageTags && Array.isArray(repos)) {
-        const languages = repos
-          .filter((repo) => !repo.fork && repo.language)
-          .map((repo) => repo.language)
-          .reduce((acc, lang) => {
-            acc[lang] = (acc[lang] || 0) + 1;
-            return acc;
-          }, {});
+      // Store repos as data attributes for panel sync
+      const repoList = $("repo-list");
+      if (repoList && Array.isArray(repos)) {
+        repoList.innerHTML = "";
+        const cleanRepos = repos.filter((repo) => !repo.fork).slice(0, 6);
 
-        const topLanguages = Object.entries(languages)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 4)
-          .map(([lang]) => lang);
-
-        languageTags.innerHTML = "";
-        if (topLanguages.length) {
-          topLanguages.forEach((lang) => {
-            const tag = document.createElement("span");
-            tag.className = "tag";
-            tag.textContent = lang;
-            languageTags.appendChild(tag);
-          });
-        } else {
-          const tag = document.createElement("span");
-          tag.className = "tag";
-          tag.textContent = "Open source";
-          languageTags.appendChild(tag);
-        }
+        cleanRepos.forEach((repo) => {
+          const div = document.createElement("div");
+          div.setAttribute("data-repo", "true");
+          div.setAttribute("data-name", repo.name || "");
+          div.setAttribute("data-desc", repo.description || "No description provided yet.");
+          div.setAttribute("data-lang", repo.language || "");
+          div.setAttribute("data-stars", repo.stargazers_count || "0");
+          div.setAttribute("data-url", repo.html_url || "#");
+          repoList.appendChild(div);
+        });
       }
 
-      const repoList = $("repo-list");
-      if (repoList) {
-        repoList.innerHTML = "";
-        const cleanRepos = Array.isArray(repos)
-          ? repos.filter((repo) => !repo.fork).slice(0, 6)
-          : [];
-
-        if (!cleanRepos.length) {
-          repoList.innerHTML = `
-            <div class="column is-12">
-              <article class="project-card">
-                <p class="loading">No public repositories available yet.</p>
-              </article>
-            </div>
-          `;
-          return;
-        }
-
-        cleanRepos.forEach((repo, index) => {
-          const column = document.createElement("div");
-          column.className = "column is-4";
-          const language = repo.language ? `<span class="mono">${repo.language}</span>` : "";
-          const stars = `<span class="mono">★ ${repo.stargazers_count}</span>`;
-          const description = repo.description || "No description provided yet.";
-
-          column.innerHTML = `
-            <article class="project-card reveal" style="animation-delay: ${0.05 + index * 0.05}s">
-              <h3>${repo.name}</h3>
-              <p>${description}</p>
-              <div class="project-meta">
-                ${language}
-                ${stars}
-              </div>
-              <a href="${repo.html_url}">View repo</a>
-            </article>
-          `;
-          repoList.appendChild(column);
-        });
+      // Sync panel data if globe is ready
+      if (typeof window.syncPanelData === "function") {
+        window.syncPanelData();
       }
     })
     .catch(() => {
-      const repoList = $("repo-list");
-      if (repoList) {
-        repoList.innerHTML = `
-          <div class="column is-12">
-            <article class="project-card">
-              <p class="loading">Unable to load GitHub data right now.</p>
-            </article>
-          </div>
-        `;
-      }
+      // API failed — leave defaults in place
     });
 })();
