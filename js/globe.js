@@ -448,42 +448,59 @@
     // Populate Mission View
     missionTitle.textContent = (mission.title || mission.name).toUpperCase();
     
-    // Inject Icon and Description
+    // Inject mission dossier
     missionBody.innerHTML = `
-      <div class="mission-brief-container">
-        <div class="mission-icon-wrapper">
-          <img src="${mission.icon}" class="mission-brief-icon" alt="Mission Icon" onerror="this.style.display='none'"/>
-          <div class="mission-type-tooltip">
-            <div class="type-title">${mission.typeName}</div>
-            <div class="type-desc">${mission.typeDesc}</div>
+      <div class="brief-dossier">
+
+        <div class="brief-header-row">
+          <div class="brief-icon-cell">
+            <img src="${mission.icon}" class="brief-icon" alt="${mission.typeName}" onerror="this.closest('.brief-header-row').style.display='none'"/>
           </div>
-        </div>
-        
-        <div class="mission-data-grid">
-          <div class="mission-data-row">
-            <span class="mission-data-label">CODENAME</span>
-            <span class="mission-data-value">${mission.name}</span>
-          </div>
-          <div class="mission-data-row">
-            <span class="mission-data-label">OPERATION</span>
-            <span class="mission-data-value">${mission.title}</span>
-          </div>
-          <div class="mission-data-row">
-            <span class="mission-data-label">COORDS</span>
-            <span class="mission-data-value">${mission.lat.toFixed(2)}, ${mission.lon.toFixed(2)}</span>
-          </div>
-          <div class="mission-data-row">
-            <span class="mission-data-label">LINK</span>
-            <a href="${mission.link}" target="_blank" class="mission-data-link">${mission.link}</a>
+          <div class="brief-class-cell">
+            <span class="brief-type-badge">${mission.typeName}</span>
+            <span class="brief-type-desc">${mission.typeDesc}</span>
           </div>
         </div>
 
-        <div class="mission-brief-text">
-          <span class="mission-data-label">BRIEFING</span>
+        <div class="brief-divider"><span>MISSION INTEL</span></div>
+
+        <div class="brief-intel-grid">
+          <div class="brief-field">
+            <span class="brief-field-label">CODENAME</span>
+            <span class="brief-field-value">${mission.name}</span>
+          </div>
+          <div class="brief-field">
+            <span class="brief-field-label">OPERATION</span>
+            <span class="brief-field-value">${mission.title}</span>
+          </div>
+          <div class="brief-field">
+            <span class="brief-field-label">COORDINATES</span>
+            <span class="brief-field-value brief-mono">${mission.lat.toFixed(4)}, ${mission.lon.toFixed(4)}</span>
+          </div>
+          <div class="brief-field brief-field-full">
+            <span class="brief-field-label">TARGET LINK</span>
+            <a href="${mission.link}" target="_blank" class="brief-field-link">${mission.link}</a>
+          </div>
+        </div>
+
+        ${mission.description ? `
+        <div class="brief-divider"><span>BRIEFING</span></div>
+        <div class="brief-narrative">
           <p>${mission.description}</p>
         </div>
+        ` : ''}
+
       </div>
     `;
+
+    // Toggle type description on click (for touch / mobile)
+    const iconCell = missionBody.querySelector('.brief-icon-cell');
+    if (iconCell) {
+      iconCell.addEventListener('click', () => {
+        const classCell = iconCell.nextElementSibling;
+        if (classCell) classCell.classList.toggle('brief-class-expanded');
+      });
+    }
 
     // Update Action Button
     const actionBtn = document.getElementById("mission-action-btn");

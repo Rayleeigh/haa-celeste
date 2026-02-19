@@ -6,7 +6,7 @@
     "description": "Comprehensive documentation of the self-hosted environment, including network topology, service catalog, and security policies.",
     "link": "homelab.html",
     "link_text": "ACCESS TERMINAL",
-    "type": "homelab",
+    "type": "documentation",
     "lat": -15,
     "lon": -55
   },
@@ -17,8 +17,19 @@
     "description": "",
     "link": "https://github.com/Rayleeigh/haa-celeste",
     "link_text": "INITIATE PROTOCOL",
-    "type": "project",
+    "type": "application",
     "lat": 40,
     "lon": -74
+  },
+  {
+    "id": "az104",
+    "name": "Azure 104",
+    "title": "Azure 104",
+    "description": "d",
+    "link": "d",
+    "link_text": "INITIATE PROTOCOL",
+    "type": "documentation",
+    "lat": -29.9778,
+    "lon": 26.5496
   }
 ]
