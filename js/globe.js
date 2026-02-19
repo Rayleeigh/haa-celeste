@@ -284,7 +284,7 @@
       `;
       el.addEventListener("click", () => {
         selectMission(m.id);
-        dismissHint();
+
       });
       labelContainer.appendChild(el);
       labelElements[m.id] = el;
@@ -309,7 +309,7 @@
       `;
       li.addEventListener("click", () => {
         selectMission(m.id);
-        dismissHint();
+
         closeQuickSelect();
       });
       qsList.appendChild(li);
@@ -333,21 +333,6 @@
 
   qsClose.addEventListener("click", closeQuickSelect);
 
-
-  /* ─── Onboarding Hint ─────────────────────────────────── */
-  const hint = document.createElement("div");
-  hint.id = "globe-hint";
-  hint.innerHTML = `<span class="hint-arrow">&#8599;</span> Click a point to explore`;
-  document.body.appendChild(hint);
-
-  function dismissHint() {
-    if (hint.parentNode) {
-      hint.classList.add("hint-out");
-      setTimeout(() => hint.remove(), 600);
-    }
-  }
-  // Auto-dismiss after 6s
-  setTimeout(dismissHint, 6000);
 
   /* ─── Raycaster ───────────────────────────────────────── */
   const raycaster = new THREE.Raycaster();
