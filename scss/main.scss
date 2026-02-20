@@ -232,6 +232,28 @@ strong { color: #fff; font-weight: 600; }
   pointer-events: none;
 }
 
+// ── Ship Tooltip ─────────────────────────────────────
+.ship-tooltip {
+  position: fixed;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  font-family: $mono-font;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $amber;
+  white-space: nowrap;
+  background: rgba(10, 14, 23, 0.85);
+  padding: 4px 10px;
+  border: 1px solid $amber-dim;
+  border-radius: 3px;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.25s;
+  z-index: 11;
+  &.hidden { opacity: 0; }
+  &.behind-globe { opacity: 0; }
+}
+
 // ── Onboarding Hint ───────────────────────────────────
 #globe-hint {
   position: fixed;

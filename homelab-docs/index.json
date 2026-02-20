@@ -15,10 +15,6 @@
       "slug": "celeste-documentation",
       "docs": [
         {
-          "title": "Technical",
-          "slug": "TECHNICAL"
-        },
-        {
           "title": "Technical Documentation",
           "slug": "technical-documentation"
         }

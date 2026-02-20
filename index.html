@@ -157,6 +157,12 @@
         </div>
       </div>
     </aside>
+
+    <!-- Mobile: drawer toggle button (hidden on desktop) -->
+    <button id="drawer-toggle" aria-label="Toggle operator panel">
+      <span class="drawer-toggle-line"></span>
+      <span class="drawer-toggle-label">OPERATOR</span>
+    </button>
   </div>
 
   <!-- Scanline overlay -->
@@ -184,6 +190,9 @@
 
   <!-- Mission Labels (positioned via JS over globe) -->
   <div id="mission-labels"></div>
+
+  <!-- Ship Tooltip (positioned via JS over globe) -->
+  <div id="ship-tooltip" class="ship-tooltip hidden"></div>
 
   <!-- Mission Quick Select Sidebar -->
   <button id="quickselect-toggle" aria-label="Open mission list">

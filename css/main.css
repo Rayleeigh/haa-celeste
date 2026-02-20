@@ -1944,3 +1944,29 @@ strong {
 .footer-link:hover {
   color: var(--color-primary-light);
 }
+
+/* ── Ship Tooltip ─────────────────────────────────────── */
+.ship-tooltip {
+  position: fixed;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  font-family: "Space Mono", "Consolas", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff6b35;
+  white-space: nowrap;
+  background: rgba(10, 14, 23, 0.85);
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 107, 53, 0.15);
+  border-radius: 3px;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.25s;
+  z-index: 11;
+}
+.ship-tooltip.hidden {
+  opacity: 0;
+}
+.ship-tooltip.behind-globe {
+  opacity: 0;
+}

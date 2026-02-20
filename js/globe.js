@@ -5,9 +5,18 @@
   const AUTO_ROTATE_SPEED = 0.0006;
   const CAMERA_DISTANCE = 7;
   const FLY_DURATION = 1200; // ms
+  const SHIP_ALTITUDE = GLOBE_RADIUS + 0.28;
+  const SHIP_FLY_DURATION = 1500; // ms
 
   let MISSIONS = [];
   let MISSION_TYPES = {};
+
+  /* ─── Super Destroyer State ──────────────────────────── */
+  let shipGroup = null;
+  let shipMeshes = [];
+  let shipName = "";
+  let shipFlyAnim = null;
+  let shipTooltipEl = null;
 
   /* ─── Helpers ─────────────────────────────────────────── */
   function latLonToVec3(lat, lon, r) {
@@ -146,6 +155,171 @@
   const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.6 });
   scene.add(new THREE.Points(starGeo, starMat));
 
+  /* ─── Super Destroyer ─────────────────────────────────── */
+  function createSuperDestroyer() {
+    const ship = new THREE.Group();
+    ship.name = "superDestroyer";
+
+    // Main hull — 4-sided cone on its side (diamond/wedge cross-section)
+    const hullGeo = new THREE.ConeGeometry(0.025, 0.12, 4);
+    const hullMat = new THREE.MeshPhongMaterial({
+      color: 0x1a2a3a,
+      emissive: 0x0a1a2a,
+      emissiveIntensity: 0.3,
+      flatShading: true,
+    });
+    const hull = new THREE.Mesh(hullGeo, hullMat);
+    hull.rotation.z = Math.PI / 2;
+    hull.rotation.y = Math.PI / 4;
+    ship.add(hull);
+
+    // Bridge tower — small box raised at the rear
+    const bridgeGeo = new THREE.BoxGeometry(0.02, 0.015, 0.015);
+    const bridgeMat = new THREE.MeshPhongMaterial({
+      color: 0x0a1628,
+      emissive: 0x00f0ff,
+      emissiveIntensity: 0.2,
+    });
+    const bridge = new THREE.Mesh(bridgeGeo, bridgeMat);
+    bridge.position.set(-0.02, 0.015, 0);
+    ship.add(bridge);
+
+    // Engine glows — two small orange spheres at the back
+    const engGeo = new THREE.SphereGeometry(0.006, 6, 6);
+    const engMat = new THREE.MeshBasicMaterial({
+      color: 0xff6b35,
+      transparent: true,
+      opacity: 0.9,
+    });
+    [-0.012, 0.012].forEach((z) => {
+      const eng = new THREE.Mesh(engGeo, engMat);
+      eng.position.set(-0.06, 0, z);
+      ship.add(eng);
+    });
+
+    // Cyan accent edge lines
+    const edgeMat = new THREE.LineBasicMaterial({
+      color: 0x00f0ff,
+      transparent: true,
+      opacity: 0.4,
+    });
+    const pts = [
+      new THREE.Vector3(-0.06, 0, -0.025),
+      new THREE.Vector3(0.06, 0, 0),
+      new THREE.Vector3(-0.06, 0, 0.025),
+      new THREE.Vector3(-0.06, 0, -0.025),
+    ];
+    ship.add(
+      new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), edgeMat)
+    );
+
+    return ship;
+  }
+
+  function orientShipAtPosition(ship, position) {
+    const up = position.clone().normalize();
+    const worldUp = new THREE.Vector3(0, 1, 0);
+    let tangent = new THREE.Vector3().crossVectors(worldUp, up).normalize();
+    if (tangent.lengthSq() < 0.001) tangent.set(1, 0, 0);
+    const right = new THREE.Vector3().crossVectors(up, tangent).normalize();
+    const m = new THREE.Matrix4();
+    m.makeBasis(tangent, up, right);
+    ship.setRotationFromMatrix(m);
+  }
+
+  function orientShipTowardTarget(ship, currentPos, targetPos) {
+    const up = currentPos.clone().normalize();
+    const toTarget = targetPos.clone().sub(currentPos);
+    const d = toTarget.dot(up);
+    const tangentForward = toTarget.sub(up.clone().multiplyScalar(d));
+    if (tangentForward.lengthSq() < 0.0001) return;
+    tangentForward.normalize();
+    const right = new THREE.Vector3().crossVectors(up, tangentForward).normalize();
+    const corrected = new THREE.Vector3().crossVectors(right, up).normalize();
+    const m = new THREE.Matrix4();
+    m.makeBasis(corrected, up, right);
+    ship.setRotationFromMatrix(m);
+  }
+
+  function flyShipToMission(mission) {
+    if (shipFlyAnim) cancelAnimationFrame(shipFlyAnim);
+    if (!shipGroup) return;
+
+    const targetPos = latLonToVec3(mission.lat, mission.lon, SHIP_ALTITUDE);
+    const startPos = shipGroup.position.clone();
+    const startDir = startPos.clone().normalize();
+    const targetDir = targetPos.clone().normalize();
+    const startTime = performance.now();
+
+    function animateShip() {
+      const elapsed = performance.now() - startTime;
+      const t = Math.min(elapsed / SHIP_FLY_DURATION, 1);
+      const ease = easeInOutCubic(t);
+
+      const currentDir = new THREE.Vector3()
+        .copy(startDir)
+        .lerp(targetDir, ease)
+        .normalize();
+      const currentPos = currentDir.multiplyScalar(SHIP_ALTITUDE);
+      shipGroup.position.copy(currentPos);
+      orientShipTowardTarget(shipGroup, currentPos, targetPos);
+
+      if (t < 1) {
+        shipFlyAnim = requestAnimationFrame(animateShip);
+      } else {
+        shipFlyAnim = null;
+        orientShipAtPosition(shipGroup, currentPos);
+      }
+    }
+
+    shipFlyAnim = requestAnimationFrame(animateShip);
+  }
+
+  function flyShipToDefault() {
+    flyShipToMission({ lat: 0, lon: 0 });
+  }
+
+  function initShip(names) {
+    shipName = names[Math.floor(Math.random() * names.length)];
+    shipGroup = createSuperDestroyer();
+
+    shipGroup.traverse((child) => {
+      if (child.isMesh) shipMeshes.push(child);
+    });
+
+    const defaultPos = latLonToVec3(0, 0, SHIP_ALTITUDE);
+    shipGroup.position.copy(defaultPos);
+    orientShipAtPosition(shipGroup, defaultPos);
+    globeGroup.add(shipGroup);
+
+    shipTooltipEl = document.getElementById("ship-tooltip");
+  }
+
+  function updateShipTooltip() {
+    if (!shipTooltipEl || !shipGroup || !shipGroup.visible) return;
+
+    const worldPos = shipGroup.position.clone();
+    globeGroup.localToWorld(worldPos);
+
+    const projected = worldPos.clone().project(camera);
+    const x = (projected.x * 0.5 + 0.5) * container.clientWidth;
+    const y = (-projected.y * 0.5 + 0.5) * container.clientHeight;
+
+    shipTooltipEl.style.left = x + "px";
+    shipTooltipEl.style.top = (y - 20) + "px";
+
+    const cameraDir = camera.position.clone().normalize();
+    const markerDir = worldPos.clone().normalize();
+    const dot = cameraDir.dot(markerDir);
+    shipTooltipEl.classList.toggle("behind-globe", dot < 0.15);
+  }
+
+  function showShipTooltip(visible) {
+    if (!shipTooltipEl) return;
+    shipTooltipEl.classList.toggle("hidden", !visible);
+    if (visible) shipTooltipEl.textContent = "SES " + shipName;
+  }
+
   /* ─── Mission Markers (Shader) ────────────────────────── */
   const markerMeshes = [];
   const markerGeo = new THREE.SphereGeometry(MARKER_SIZE, 16, 16);
@@ -247,12 +421,15 @@
     initQuickSelect();
   }
 
-  // Fetch missions and types in parallel
+  // Fetch missions, types, and ship names in parallel
   Promise.all([
     fetch('data/missions.json').then(r => r.json()),
-    fetch('data/mission_types.json').then(r => r.json())
-  ]).then(([missions, types]) => initMissions(missions, types))
-    .catch(e => console.error("Failed to load mission data:", e));
+    fetch('data/mission_types.json').then(r => r.json()),
+    fetch('data/ship_names.json').then(r => r.json())
+  ]).then(([missions, types, shipNames]) => {
+    initMissions(missions, types);
+    initShip(shipNames);
+  }).catch(e => console.error("Failed to load mission data:", e));
 
   /* ─── Tech Stack (Arsenal) ────────────────────────────── */
   function initStack(data) {
@@ -353,8 +530,21 @@
     mouse.x = (e.clientX / container.clientWidth) * 2 - 1;
     mouse.y = -(e.clientY / container.clientHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObjects(markerMeshes);
-    renderer.domElement.style.cursor = hits.length > 0 ? "pointer" : "grab";
+    const markerHits = raycaster.intersectObjects(markerMeshes);
+    const shipHits = shipMeshes.length > 0
+      ? raycaster.intersectObjects(shipMeshes, true)
+      : [];
+
+    if (shipHits.length > 0) {
+      renderer.domElement.style.cursor = "pointer";
+      showShipTooltip(true);
+    } else if (markerHits.length > 0) {
+      renderer.domElement.style.cursor = "pointer";
+      showShipTooltip(false);
+    } else {
+      renderer.domElement.style.cursor = "grab";
+      showShipTooltip(false);
+    }
   });
 
   /* ─── Animated HUD Coordinates ───────────────────────── */
@@ -490,17 +680,34 @@
     // Update Action Button
     const actionBtn = document.getElementById("mission-action-btn");
     actionBtn.href = mission.link || "#";
+    actionBtn.target = "_blank";
+    actionBtn.rel = "noopener noreferrer";
     actionBtn.textContent = (mission.link_text || "INITIATE PROTOCOL").toUpperCase();
 
     // Switch Views
     viewOperator.classList.remove("active");
     viewMission.classList.add("active");
 
+    // Auto-open drawer on mobile so the mission briefing is visible
+    if (window.innerWidth <= 768) {
+      const panel = document.getElementById("operator-panel");
+      const toggle = document.getElementById("drawer-toggle");
+      if (panel) panel.classList.add("drawer-open");
+      if (toggle) {
+        toggle.classList.add("active");
+        const label = toggle.querySelector(".drawer-toggle-label");
+        if (label) label.textContent = "CLOSE";
+      }
+    }
+
     // Animate HUD coordinates
     animateCoords(mission.lat, mission.lon);
 
     // Fly camera toward the marker
     flyToMission(mission);
+
+    // Fly Super Destroyer to mission
+    flyShipToMission(mission);
   }
 
   function closeBriefing() {
@@ -517,6 +724,9 @@
 
     // Reset coords to 0,0 or keep last
     animateCoords(0, 0);
+
+    // Return ship to idle orbit
+    flyShipToDefault();
   }
 
   missionBackBtn.addEventListener("click", closeBriefing);
@@ -653,9 +863,9 @@
       const markerDir = worldPos.clone().normalize();
       const dot = cameraDir.dot(markerDir);
       
-      // Check if behind globe OR occluded by right panel (30% width)
+      // Check if behind globe OR occluded by right panel (desktop only)
       const isBehindGlobe = dot < 0.15;
-      const isOccludedByPanel = x > window.innerWidth * 0.68;
+      const isOccludedByPanel = window.innerWidth > 768 && x > window.innerWidth * 0.68;
       el.classList.toggle("behind-globe", isBehindGlobe || isOccludedByPanel);
     });
   }
@@ -670,11 +880,16 @@
   let time = 0;
 
   /* ─── Resize ──────────────────────────────────────────── */
-  window.addEventListener("resize", () => {
+  function updateCameraForViewport() {
     camera.aspect = container.clientWidth / container.clientHeight;
+    // On mobile, camera at globe equator for true vertical centering
+    camera.position.y = window.innerWidth <= 768 ? 0 : 1;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
-  });
+  }
+
+  window.addEventListener("resize", updateCameraForViewport);
+  updateCameraForViewport();
 
   /* ─── Animate Loop ────────────────────────────────────── */
   function animate() {
@@ -705,6 +920,38 @@
       mesh.visible = dot < 0.2; // Threshold to hide slightly before horizon
     });
 
+    // Update Super Destroyer
+    if (shipGroup) {
+      // Idle bob when not flying
+      if (!shipFlyAnim) {
+        const bobAmount = Math.sin(time * 2.5) * 0.003;
+        shipGroup.position.addScaledVector(
+          shipGroup.position.clone().normalize(),
+          bobAmount
+        );
+      }
+
+      // Engine glow pulsation
+      shipGroup.children.forEach((child) => {
+        if (
+          child.material &&
+          child.material.color &&
+          child.material.color.getHex() === 0xff6b35
+        ) {
+          child.material.opacity = 0.7 + Math.sin(time * 6) * 0.3;
+        }
+      });
+
+      // Occlusion: hide ship if behind globe
+      const shipWorldPos = shipGroup.position.clone();
+      globeGroup.localToWorld(shipWorldPos);
+      const viewVec = shipWorldPos.clone().sub(camera.position);
+      const shipNormal = shipWorldPos.clone().normalize();
+      shipGroup.visible = viewVec.dot(shipNormal) < 0.2;
+
+      updateShipTooltip();
+    }
+
     controls.update();
     updateLabels();
     renderer.render(scene, camera);
@@ -714,4 +961,17 @@
 
   // Expose selectMission globally for potential external use
   window.selectMission = selectMission;
+
+  /* ─── Mobile Drawer Toggle ─────────────────────────────── */
+  const drawerToggle = document.getElementById("drawer-toggle");
+  const operatorPanel = document.getElementById("operator-panel");
+
+  if (drawerToggle && operatorPanel) {
+    drawerToggle.addEventListener("click", () => {
+      const isOpen = operatorPanel.classList.toggle("drawer-open");
+      drawerToggle.classList.toggle("active", isOpen);
+      const label = drawerToggle.querySelector(".drawer-toggle-label");
+      if (label) label.textContent = isOpen ? "CLOSE" : "OPERATOR";
+    });
+  }
 })();

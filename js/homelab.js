@@ -64,6 +64,14 @@
     }
 
     addCopyButtons(target);
+
+    target.querySelectorAll("a[href]").forEach((link) => {
+      const href = link.getAttribute("href");
+      if (href && !href.startsWith("#") && !href.startsWith("mailto:")) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+    });
   };
 
   const addCopyButtons = (target) => {

@@ -18,6 +18,10 @@
     if (href) {
       el.href = href;
       if (label) el.textContent = label;
+      if (!href.startsWith("mailto:")) {
+        el.target = "_blank";
+        el.rel = "noopener noreferrer";
+      }
       el.classList.remove("is-hidden");
     } else {
       el.classList.add("is-hidden");
