@@ -1945,6 +1945,11 @@ strong {
   color: var(--color-primary-light);
 }
 
+/* ── Drawer Toggle (hidden on desktop, visible on mobile) ── */
+#drawer-toggle {
+  display: none;
+}
+
 /* ── Ship Tooltip ─────────────────────────────────────── */
 .ship-tooltip {
   position: fixed;
