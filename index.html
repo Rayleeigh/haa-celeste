@@ -31,15 +31,15 @@
       width: 70%;
       height: 100%;
       position: relative;
-      order: 1;
+      order: 2;
     }
     #operator-panel {
       width: 30%;
       height: 100%;
       background: rgba(10, 14, 23, 0.8);
-      border-left: 1px solid rgba(0, 240, 255, 0.15);
+      border-right: 1px solid rgba(0, 240, 255, 0.15);
       position: relative;
-      order: 2;
+      order: 1;
       padding: 110px 2rem 8rem 2rem;
       box-sizing: border-box;
       display: flex;
@@ -183,9 +183,10 @@
       <span class="hud-status-right">GALACTIC COMMAND // <span id="brand-name">Rayleeigh</span></span>
     </div>
     <div class="hud-bottom-bar">
-      <span>SELECT MISSION TARGET</span>
-      <span class="mono" id="hud-coords">LAT 0.00 / LON 0.00</span>
+      <span>SELECT SECTOR TARGET</span>
+      <span class="mono" id="hud-coords">SECTOR // STANDBY</span>
     </div>
+    <button id="sector-back-btn" class="sector-back-btn hidden">&lt; RETURN TO OVERVIEW</button>
   </div>
 
   <!-- Mission Labels (positioned via JS over globe) -->
@@ -202,7 +203,7 @@
   </button>
   <aside id="quickselect-panel" class="qs-hidden">
     <div class="qs-header">
-      <span class="qs-title">MISSIONS</span>
+      <span class="qs-title">PLANETS</span>
       <button class="qs-close" id="quickselect-close" aria-label="Close mission list">&times;</button>
     </div>
     <ul class="qs-list" id="quickselect-list">
