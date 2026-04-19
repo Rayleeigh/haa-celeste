@@ -57,13 +57,14 @@
     .then(([user, repos, localProfile]) => {
       const displayName = user.name || user.login || username;
       const handle = `@${user.login || username}`;
-      const bio = user.bio || "Building modern web apps and sharing what I learn.";
+      const bio = user.bio || "IT professional focused on building dependable systems. Designs automation and infrastructure with clarity and resilience.";
       const company = user.company || "Independent";
       const location = user.location || "Remote";
       const website = normalizeUrl(user.blog || "");
 
       // HQ Panel
       setText("profile-name", displayName);
+      setText("hero-bio", bio);
       setText("profile-role", user.company ? company : `GitHub ${handle}`);
 
       if (user.avatar_url) {
@@ -124,6 +125,11 @@
       // Sync panel data if globe is ready
       if (typeof window.syncPanelData === "function") {
         window.syncPanelData();
+      }
+
+      // Sync mission panel display elements
+      if (typeof window.syncMissionPanel === "function") {
+        window.syncMissionPanel();
       }
     })
     .catch(() => {

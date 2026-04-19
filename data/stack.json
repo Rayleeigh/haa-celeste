@@ -1,5 +1,6 @@
 [
   { "name": "Python", "icon": "python" },
   { "name": "Azure", "icon": "azure" },
-  { "name": "Linux", "icon": "linux" }
+  { "name": "Linux", "icon": "linux" },
+  {}
 ]

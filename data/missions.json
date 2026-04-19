@@ -5,31 +5,28 @@
     "title": "Homelab Infrastructure",
     "description": "Comprehensive documentation of the self-hosted environment, including network topology, service catalog, and security policies.",
     "link": "homelab.html",
-    "link_text": "ACCESS TERMINAL",
+    "link_text": "View",
     "type": "documentation",
-    "lat": -15,
-    "lon": -55
+    "technologies": ["linux"]
   },
   {
     "id": "Celeste",
     "name": "Celeste",
     "title": "Protocol Celeste",
-    "description": "",
+    "description": "This portfolio site — a minimalist personal page built with plain HTML, CSS, and JavaScript.",
     "link": "https://github.com/Rayleeigh/haa-celeste",
-    "link_text": "INITIATE PROTOCOL",
+    "link_text": "View",
     "type": "application",
-    "lat": 40,
-    "lon": -74
+    "technologies": []
   },
   {
     "id": "az104",
     "name": "Azure 104",
     "title": "Azure 104",
-    "description": "Documentation and resources for the Microsoft Azure Fundamentals (AZ-104) certification, covering core Azure services, security, and governance.",
+    "description": "Documentation and resources for the Microsoft Azure Administrator (AZ-104) certification, covering core Azure services, security, and governance.",
     "link": "https://github.com/Rayleeigh/Azure-104",
-    "link_text": "INITIATE PROTOCOL",
+    "link_text": "View",
     "type": "documentation",
-    "lat": -29.9778,
-    "lon": 26.5496
+    "technologies": ["azure"]
   }
 ]
