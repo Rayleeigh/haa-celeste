@@ -21,7 +21,8 @@
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.07;
-  controls.enableZoom = true;
+  // Keep page scrolling responsive while hovering the graph canvas.
+  controls.enableZoom = false;
   controls.enablePan = false;
   controls.rotateSpeed = 0.5;
   controls.minDistance = 4;
@@ -66,8 +67,8 @@
   let flyAnim    = null;
   let running    = false;
 
-  const OVERVIEW_POS    = new THREE.Vector3(0, 2, 14);
-  const OVERVIEW_TARGET = new THREE.Vector3(0, 0, 0);
+  const overviewPos    = new THREE.Vector3(0, 2, 14);
+  const overviewTarget = new THREE.Vector3(0, 0, 0);
 
   /* ── Force simulation ────────────────────────────────────────── */
   function simulate(positions, edgeList, iterations) {
@@ -123,16 +124,18 @@
 
   /* ── Build graph ─────────────────────────────────────────────── */
   function buildGraph(stack, missions) {
+    const safeStack = stack.filter((item) => item && item.icon && item.name);
+    const safeMissions = missions.filter((item) => item && item.id && (item.title || item.name));
     const rand = () => (Math.random() - 0.5) * 8;
 
-    const techNodes = stack.map(s => ({
+    const techNodes = safeStack.map(s => ({
       id: s.icon, label: s.name, type: 'tech',
       radius: 0.32, color: 0x6B1E2E, glowColor: 0x8B2E42,
       data: s,
       x: rand(), y: rand(), z: rand(),
     }));
 
-    const projectNodes = missions.map(m => ({
+    const projectNodes = safeMissions.map(m => ({
       id: m.id, label: m.name || m.title, type: 'project',
       radius: 0.20, color: 0xF8F5F5, glowColor: 0xA85068,
       data: m,
@@ -144,7 +147,7 @@
     const techIndex = {};
     techNodes.forEach((n, i) => { techIndex[n.id] = i; });
 
-    missions.forEach((m, mi) => {
+    safeMissions.forEach((m, mi) => {
       const pIdx = techNodes.length + mi;
       (m.technologies || []).forEach(t => {
         if (techIndex[t] !== undefined) {
@@ -154,9 +157,38 @@
     });
 
     simulate(nodes, edges, 300);
+    fitOverviewCamera();
     buildMeshes();
     buildEdgeLines();
     buildLabels();
+  }
+
+  function fitOverviewCamera() {
+    if (!nodes.length) return;
+
+    const center = new THREE.Vector3();
+    nodes.forEach((node) => center.add(node));
+    center.multiplyScalar(1 / nodes.length);
+
+    let radius = 0;
+    nodes.forEach((node) => {
+      const distance = center.distanceTo(node) + (node.radius || 0);
+      radius = Math.max(radius, distance);
+    });
+
+    radius = Math.max(radius, 4.5);
+    const fov = THREE.MathUtils.degToRad(camera.fov);
+    const fitDistance = Math.max(10, (radius / Math.sin(fov / 2)) * 1.05);
+    const viewDirection = new THREE.Vector3(0, 0.18, 1).normalize();
+
+    overviewTarget.copy(center);
+    overviewPos.copy(center).add(viewDirection.multiplyScalar(fitDistance));
+
+    controls.target.copy(overviewTarget);
+    camera.position.copy(overviewPos);
+    controls.minDistance = Math.max(4, radius * 0.9);
+    controls.maxDistance = Math.max(22, fitDistance * 1.8);
+    controls.update();
   }
 
   /* ── Three.js objects ────────────────────────────────────────── */
@@ -222,6 +254,8 @@
   /* ── Interaction ─────────────────────────────────────────────── */
   const raycaster = new THREE.Raycaster();
   const mouse     = new THREE.Vector2();
+  let pointerStart = null;
+  let dragMoved = false;
 
   container.addEventListener('mousemove', e => {
     const r = container.getBoundingClientRect();
@@ -249,7 +283,33 @@
     }
   });
 
-  container.addEventListener('click', () => {
+  renderer.domElement.addEventListener('pointerdown', e => {
+    pointerStart = { x: e.clientX, y: e.clientY };
+    dragMoved = false;
+  });
+
+  renderer.domElement.addEventListener('pointermove', e => {
+    if (!pointerStart || dragMoved) return;
+    const dx = e.clientX - pointerStart.x;
+    const dy = e.clientY - pointerStart.y;
+    if ((dx * dx) + (dy * dy) > 36) {
+      dragMoved = true;
+    }
+  });
+
+  renderer.domElement.addEventListener('pointerup', () => {
+    pointerStart = null;
+  });
+
+  renderer.domElement.addEventListener('pointerleave', () => {
+    pointerStart = null;
+  });
+
+  renderer.domElement.addEventListener('click', () => {
+    if (dragMoved) {
+      dragMoved = false;
+      return;
+    }
     if (hoveredIdx >= 0) openPanel(hoveredIdx);
     else closePanel();
   });
@@ -299,7 +359,6 @@
 
   function closePanel() {
     panel.classList.remove('open');
-    easeCamera(OVERVIEW_POS.clone(), OVERVIEW_TARGET.clone(), 850);
   }
 
   panelClose.addEventListener('click', closePanel);

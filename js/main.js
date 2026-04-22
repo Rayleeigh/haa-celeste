@@ -3,7 +3,6 @@
   const userUrl = `https://api.github.com/users/${username}`;
   const repoUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`;
   const localUserUrl = "data/profile.json";
-  const localRepoUrl = "data/repos.json";
 
   const $ = (id) => document.getElementById(id);
   const setText = (id, value, fallback = "") => {
@@ -42,19 +41,18 @@
       return res.json();
     });
 
-  const fetchWithFallback = (primaryUrl, fallbackUrl) =>
-    fetchJson(primaryUrl, {
+  const fetchGithubJson = (url) =>
+    fetchJson(url, {
       headers: {
         Accept: "application/vnd.github+json",
       },
-    }).catch(() => fetchJson(fallbackUrl));
+    });
 
   Promise.all([
-    fetchWithFallback(userUrl, localUserUrl),
-    fetchWithFallback(repoUrl, localRepoUrl),
-    fetchJson(localUserUrl).catch(() => ({})),
+    fetchGithubJson(userUrl).catch(() => fetchJson(localUserUrl).catch(() => ({}))),
+    fetchGithubJson(repoUrl).catch(() => []),
   ])
-    .then(([user, repos, localProfile]) => {
+    .then(([user, repos]) => {
       const displayName = user.name || user.login || username;
       const handle = `@${user.login || username}`;
       const bio = user.bio || "IT professional focused on building dependable systems. Designs automation and infrastructure with clarity and resilience.";
@@ -125,11 +123,6 @@
       // Sync panel data if globe is ready
       if (typeof window.syncPanelData === "function") {
         window.syncPanelData();
-      }
-
-      // Sync mission panel display elements
-      if (typeof window.syncMissionPanel === "function") {
-        window.syncMissionPanel();
       }
     })
     .catch(() => {

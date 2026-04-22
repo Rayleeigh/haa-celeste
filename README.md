@@ -74,4 +74,4 @@ python scripts/local_release.py
 
 ## Technical Documentation
 
-- See [`docs/TECHNICAL.md`](./docs/TECHNICAL.md) for full technical details and workflow internals.
+- See [`homelab-docs/celeste-documentation/technical-documentation.md`](./homelab-docs/celeste-documentation/technical-documentation.md) for the current architecture and workflow notes.

@@ -6,66 +6,191 @@
   <title>Rayleeigh | Homelab</title>
   <meta name="description" content="Homelab documentation for Rayleeigh." />
   <link rel="icon" href="favicon.ico" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
   <link rel="stylesheet" href="css/main.css" />
 </head>
-<body>
-    <div class="ambient">
-    <span class="blob blob-a"></span>
-    <span class="blob blob-b"></span>
-    <span class="grid"></span>
-    <div class="dna-helix" id="dna-helix"></div>
-  </div>
+<body class="homelab-page docs-home-mode">
+  <div class="docs-app">
+    <header class="docs-header">
+      <div class="docs-header-left">
+        <button class="docs-sidebar-toggle" id="docs-sidebar-toggle" type="button" aria-controls="docs-sidebar" aria-expanded="false" aria-label="Open navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
 
-  <section class="section doc-shell">
-    <div class="container">
-      <nav class="level nav-compact">
-        <div class="level-left">
-          <div class="level-item">
-            <a class="brand-link" href="index.html" aria-label="Back to home">
-              <div class="brand">
-                <img class="brand-logo is-hidden" id="brand-logo" alt="Brand logo" />
-                <span id="brand-initials">R</span>
-              </div>
-            </a>
+        <a class="docs-brand" href="index.html" aria-label="Back to home">
+          <div class="brand docs-brand-mark">
+            <img class="brand-logo is-hidden" id="brand-logo" alt="Brand logo" />
+            <span id="brand-initials">R</span>
           </div>
-          <div class="level-item">
-            <p class="brand-text">Homelab</p>
+          <div class="docs-brand-copy">
+            <span class="docs-brand-kicker">Knowledge Base</span>
+            <span class="docs-brand-title">Homelab</span>
           </div>
-        </div>
-        <div class="level-right">
-          <a class="level-item nav-link" href="index.html">Home</a>
-          <a class="level-item nav-link" href="index.html#projects">Projects</a>
-          <a class="level-item nav-link" href="index.html#contact">Contact</a>
-        </div>
+        </a>
+      </div>
+
+      <div class="docs-header-status">
+        <span class="docs-header-label">Current</span>
+        <strong id="doc-current-label">Overview / Home</strong>
+        <span class="docs-header-path" id="doc-path-label">overview / landing</span>
+      </div>
+
+      <nav class="docs-topnav" aria-label="Secondary">
+        <a class="docs-topnav-link" href="index.html">Home</a>
+        <a class="docs-topnav-link" href="index.html#graph-section">Projects</a>
+        <a class="docs-topnav-link" href="index.html#socials">Contact</a>
       </nav>
+    </header>
 
-      <div class="doc-header">
-        <p class="eyebrow">Documentation</p>
-        <h1 class="title is-2">Homelab Notes</h1>
-        <p class="subtitle">Choose a category and document from the menu.</p>
-      </div>
-
-      <div class="columns doc-layout">
-        <aside class="column is-4">
-          <div class="doc-menu" id="doc-menu">
-            <p class="loading">Loading documentation menu...</p>
-          </div>
-        </aside>
-        <div class="column is-8">
-          <article class="doc-body content" id="doc-content">
-            <p class="loading">Loading homelab documentation...</p>
-          </article>
+    <div class="docs-layout">
+      <aside class="docs-sidebar" id="docs-sidebar">
+        <div class="docs-sidebar-inner">
+          <section class="docs-sidebar-card docs-sidebar-panel">
+            <div class="docs-sidebar-navhead">
+              <div>
+                <p class="docs-panel-title">Directory</p>
+                <p class="docs-sidebar-note">Browse by system, service, and guide.</p>
+              </div>
+              <span class="docs-sidebar-chip" id="doc-index-count">0 docs</span>
+            </div>
+            <nav class="doc-menu" id="doc-menu">
+              <p class="loading">Loading documentation menu...</p>
+            </nav>
+          </section>
         </div>
-      </div>
+      </aside>
+
+      <button class="docs-sidebar-overlay" id="docs-sidebar-overlay" type="button" aria-label="Close navigation"></button>
+
+      <main class="docs-main">
+        <section class="docs-home-shell" id="docs-home-shell">
+          <div class="docs-home-panel">
+            <div class="docs-home-hero">
+              <div class="docs-home-copy">
+                <p class="docs-home-kicker">Private Infrastructure Wiki</p>
+                <h1 class="docs-home-title">Find the exact homelab note before you change anything.</h1>
+                <p class="docs-home-text">Search titles, headings, slugs, configuration fragments, and document content. Results bias exact matches first, then surface the closest technical context.</p>
+              </div>
+
+              <div class="docs-home-rail">
+                <div class="docs-home-stat">
+                  <span class="docs-home-stat-label">Index Status</span>
+                  <strong class="docs-home-stat-value" id="doc-search-ready">Indexing docs...</strong>
+                </div>
+                <div class="docs-home-stat">
+                  <span class="docs-home-stat-label">Knowledge Surface</span>
+                  <strong class="docs-home-stat-value">Private search-first workspace</strong>
+                </div>
+                <div class="docs-home-stat">
+                  <span class="docs-home-stat-label">Search Scope</span>
+                  <p class="docs-home-stat-copy">Titles, headings, slugs, services, and deep content snippets.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="docs-home-search-shell">
+              <div class="docs-home-search-head">
+                <div>
+                  <p class="docs-panel-title">Query</p>
+                  <p class="docs-results-note">Use service names, config keys, protocols, or heading text.</p>
+                </div>
+                <span class="docs-search-shortcut" aria-hidden="true">Ctrl / Cmd + K</span>
+              </div>
+
+              <div class="docs-home-search">
+                <label class="docs-search-input-wrap" for="docs-search-input">
+                  <span class="docs-search-label">Search</span>
+                  <input id="docs-search-input" type="search" placeholder="Search services, configs, headings, and doc names" autocomplete="off" aria-keyshortcuts="Control+K Meta+K" />
+                </label>
+                <div class="docs-search-meta">
+                  <p class="docs-search-status" id="docs-search-status">Indexing documentation...</p>
+                  <div class="docs-search-flags" aria-hidden="true">
+                    <span class="docs-search-flag">Exact titles</span>
+                    <span class="docs-search-flag">Headings</span>
+                    <span class="docs-search-flag">Content</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="docs-search-results-shell">
+                <div class="docs-results-head">
+                  <div>
+                    <p class="docs-panel-title">Results</p>
+                    <p class="docs-results-note">Best matches update instantly as you type.</p>
+                  </div>
+                </div>
+                <div class="docs-search-results" id="docs-search-results">
+                  <p class="loading">Preparing search index...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="docs-reading-shell" id="docs-reading-shell">
+          <div class="docs-reading-main">
+            <div class="docs-reading-content">
+              <div class="docs-reading-topbar">
+                <div>
+                  <p class="docs-reading-kicker">Document</p>
+                  <h2 class="docs-reading-title" id="doc-content-title">Loading...</h2>
+                  <p class="docs-reading-summary" id="doc-content-summary">Loading homelab documentation.</p>
+                </div>
+                <div class="docs-reading-actions">
+                  <button class="docs-back-search" id="docs-back-search" type="button">Back</button>
+                  <button class="docs-home-link docs-main-link" id="docs-back-main" type="button">Back to Main</button>
+                </div>
+              </div>
+
+              <div class="docs-reading-meta">
+                <div class="docs-breadcrumb" id="doc-breadcrumb">overview / landing</div>
+                <span class="docs-reading-path" id="doc-reading-path">overview / landing</span>
+              </div>
+
+              <article class="doc-body docs-article content" id="doc-content">
+                <p class="loading">Loading homelab documentation...</p>
+              </article>
+            </div>
+
+            <aside class="docs-reading-rail" aria-label="Reading context">
+              <div class="docs-reading-rail-card">
+                <p class="docs-panel-title">Current Path</p>
+                <p class="docs-reading-rail-path" id="doc-reading-rail-path">overview / landing</p>
+              </div>
+
+              <div class="docs-reading-rail-card">
+                <p class="docs-panel-title">Context</p>
+                <p class="docs-reading-rail-text" id="doc-reading-rail-summary">Find a document first, then shift into reading mode.</p>
+              </div>
+
+              <div class="docs-reading-rail-card">
+                <p class="docs-panel-title">Search Library</p>
+                <p class="docs-reading-rail-text">Run a new query from the reader without losing your place.</p>
+                <div class="docs-reading-rail-actions">
+                  <label class="docs-reading-rail-query-wrap" for="docs-reading-rail-query">
+                    <span class="docs-search-label">Query</span>
+                    <input
+                      class="docs-reading-rail-query"
+                      id="docs-reading-rail-query"
+                      type="search"
+                      placeholder="Search docs, headings, and config terms"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <button class="docs-reading-rail-button" id="docs-reading-rail-search" type="button">Search Library</button>
+                  <span class="docs-search-shortcut" aria-hidden="true">Ctrl / Cmd + K</span>
+                </div>
+                <div class="docs-reading-rail-results" id="docs-reading-rail-results" hidden></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
     </div>
-  </section>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -74,6 +199,5 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <script src="js/homelab.js"></script>
-  <script src="js/helix.js"></script>
 </body>
 </html>
