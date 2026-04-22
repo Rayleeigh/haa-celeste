@@ -2376,8 +2376,210 @@ body.docs-sidebar-open {
   color: rgba(26, 10, 14, 0.68);
 }
 
-.docs-home-search {
+.docs-home-hero {
+  display: grid;
+  grid-template-columns: 1fr min(240px, 30%);
+  gap: 2.5rem;
+  align-items: start;
+  padding-bottom: 2.25rem;
+}
+
+.homelab-page.docs-home-mode .docs-home-hero {
+  border-bottom: 1px solid rgba(248, 245, 245, 0.07);
+}
+
+.homelab-page.docs-reading-mode .docs-home-hero {
+  border-bottom: 1px solid rgba(107, 30, 46, 0.07);
+}
+
+.docs-home-rail {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.homelab-page.docs-home-mode .docs-home-rail {
+  border-color: rgba(248, 245, 245, 0.09);
+  background: rgba(248, 245, 245, 0.04);
+}
+
+.homelab-page.docs-reading-mode .docs-home-rail {
+  border-color: rgba(107, 30, 46, 0.08);
+  background: rgba(107, 30, 46, 0.03);
+}
+
+.docs-home-stat {
+  padding: 0.85rem 1rem;
+}
+
+.docs-home-stat + .docs-home-stat {
+  border-top: 1px solid transparent;
+}
+
+.homelab-page.docs-home-mode .docs-home-stat + .docs-home-stat {
+  border-color: rgba(248, 245, 245, 0.07);
+}
+
+.homelab-page.docs-reading-mode .docs-home-stat + .docs-home-stat {
+  border-color: rgba(107, 30, 46, 0.07);
+}
+
+.docs-home-stat-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: 0.3rem;
+}
+
+.docs-home-stat-value {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.homelab-page.docs-home-mode .docs-home-stat-value {
+  color: rgba(248, 245, 245, 0.88);
+}
+
+.homelab-page.docs-reading-mode .docs-home-stat-value {
+  color: var(--noir);
+}
+
+.docs-home-stat-copy {
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.homelab-page.docs-home-mode .docs-home-stat-copy {
+  color: rgba(242, 232, 234, 0.58);
+}
+
+.homelab-page.docs-reading-mode .docs-home-stat-copy {
+  color: rgba(26, 10, 14, 0.52);
+}
+
+.docs-home-search-shell {
+  margin-top: 2.25rem;
+}
+
+.docs-home-search-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.docs-home-search-head > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.docs-search-flags {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.docs-search-flag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.homelab-page.docs-home-mode .docs-search-flag {
+  border: 1px solid rgba(248, 245, 245, 0.1);
+  background: rgba(248, 245, 245, 0.06);
+  color: rgba(242, 232, 234, 0.58);
+}
+
+.homelab-page.docs-reading-mode .docs-search-flag {
+  border: 1px solid rgba(107, 30, 46, 0.09);
+  background: rgba(107, 30, 46, 0.04);
+  color: rgba(107, 30, 46, 0.65);
+}
+
+.docs-search-results-shell {
   margin-top: 2rem;
+}
+
+.docs-results-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid transparent;
+}
+
+.homelab-page.docs-home-mode .docs-results-head {
+  border-color: rgba(248, 245, 245, 0.07);
+}
+
+.homelab-page.docs-reading-mode .docs-results-head {
+  border-color: rgba(107, 30, 46, 0.07);
+}
+
+.docs-results-head > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.docs-results-note {
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.homelab-page.docs-home-mode .docs-results-note {
+  color: rgba(242, 232, 234, 0.5);
+}
+
+.homelab-page.docs-reading-mode .docs-results-note {
+  color: rgba(26, 10, 14, 0.44);
+}
+
+.docs-sidebar-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.homelab-page.docs-home-mode .docs-sidebar-chip {
+  border: 1px solid rgba(248, 245, 245, 0.12);
+  background: rgba(248, 245, 245, 0.07);
+  color: rgba(242, 232, 234, 0.68);
+}
+
+.homelab-page.docs-reading-mode .docs-sidebar-chip {
+  border: 1px solid rgba(107, 30, 46, 0.1);
+  background: rgba(107, 30, 46, 0.05);
+  color: rgba(107, 30, 46, 0.72);
+}
+
+.docs-home-search {
+  margin-top: 0.75rem;
   display: grid;
   gap: 0.9rem;
 }
@@ -3155,6 +3357,44 @@ body.docs-sidebar-open {
   .docs-reading-shell {
     padding: 1.35rem;
   }
+
+  .docs-home-hero {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .docs-home-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 14px;
+  }
+
+  .docs-home-stat {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .docs-home-stat + .docs-home-stat {
+    border-top: none;
+    border-left: 1px solid transparent;
+  }
+
+  .homelab-page.docs-home-mode .docs-home-stat + .docs-home-stat {
+    border-color: rgba(248, 245, 245, 0.07);
+  }
+
+  .homelab-page.docs-reading-mode .docs-home-stat + .docs-home-stat {
+    border-color: rgba(107, 30, 46, 0.07);
+  }
+
+  .docs-home-search-shell {
+    margin-top: 1.5rem;
+  }
+
+  .docs-search-results-shell {
+    margin-top: 1.5rem;
+  }
 }
 
 @media (max-width: 640px) {
@@ -3192,6 +3432,14 @@ body.docs-sidebar-open {
 
   .docs-search-shortcut {
     align-self: flex-start;
+  }
+
+  .docs-results-note {
+    display: none;
+  }
+
+  .docs-home-search-shell {
+    margin-top: 1.25rem;
   }
 
   .docs-search-result {
