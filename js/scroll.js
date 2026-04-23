@@ -21,6 +21,32 @@
     updateNav();
   }
 
+  // ── Mobile nav toggle ───────────────────────────────────────────────────────
+  const navBrand = document.getElementById('nav-brand');
+  const navLinks = document.getElementById('nav-links');
+  if (navBrand && navLinks && nav) {
+    const openMenu  = () => { nav.classList.add('menu-open');    navBrand.setAttribute('aria-expanded', 'true'); };
+    const closeMenu = () => { nav.classList.remove('menu-open'); navBrand.setAttribute('aria-expanded', 'false'); };
+    const toggleMenu = () => nav.classList.contains('menu-open') ? closeMenu() : openMenu();
+
+    navBrand.addEventListener('click', toggleMenu);
+
+    // Close when any link is tapped
+    navLinks.querySelectorAll('.site-nav-link').forEach(link => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    // Close on outside tap
+    document.addEventListener('click', e => {
+      if (nav.classList.contains('menu-open') && !nav.contains(e.target)) closeMenu();
+    }, { passive: true });
+
+    // Close on scroll (user is navigating)
+    window.addEventListener('scroll', () => {
+      if (nav.classList.contains('menu-open')) closeMenu();
+    }, { passive: true });
+  }
+
   // ── Load stack tags ────────────────────────────────────────────────────────
   fetch('data/stack.json')
     .then((r) => r.json())

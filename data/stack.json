@@ -1,8 +1,4 @@
 [
-  { "name": "Python", "icon": "python" },
   { "name": "Azure", "icon": "azure" },
-  { "name": "Linux", "icon": "linux" },
-  { "name": "Docker", "icon": "docker" },
-  { "name": "Terraform", "icon": "terraform" },
-  { "name": "Git", "icon": "git" }
+  { "name": "Linux", "icon": "linux" }
 ]

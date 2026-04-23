@@ -84,6 +84,10 @@ img {
   cursor: pointer;
   transition: color 0.2s, transform 0.2s;
   line-height: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
 }
 
 .nav-brand:hover { color: var(--blush); transform: translateY(-1px); }
@@ -104,6 +108,57 @@ img {
 }
 
 .site-nav-link:hover { color: var(--blush); opacity: 1; }
+
+/* ─── Mobile nav menu ──────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 1rem;
+    right: 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(242, 232, 234, 0.12);
+    background: rgba(26, 10, 14, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 24px 60px rgba(8, 0, 3, 0.4);
+    padding: 0.5rem 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #nav.menu-open .nav-links {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .site-nav-link {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border-radius: 0;
+    letter-spacing: 0.1em;
+  }
+
+  .site-nav-link + .site-nav-link {
+    border-top: 1px solid rgba(242, 232, 234, 0.06);
+  }
+
+  .nav-brand {
+    transition: color 0.2s, transform 0.2s, opacity 0.2s;
+  }
+
+  #nav.menu-open .nav-brand {
+    color: var(--rose);
+  }
+}
 
 /* ─── Sections ─────────────────────────────────────────────────────────────── */
 section {
@@ -612,9 +667,7 @@ section {
 
   .hero-actions { flex-direction: column; align-items: center; }
 
-  .nav-links { gap: 1.5rem; }
-
-  #nav { padding: 1.25rem 1.5rem; }
+  #nav { padding: 1.25rem 1.5rem; position: relative; }
   #nav.scrolled { padding: 0.875rem 1.5rem; }
 
   #footer { padding: 1.75rem 1.5rem; }
@@ -2369,7 +2422,7 @@ body.docs-sidebar-open {
 }
 
 .homelab-page.docs-home-mode .docs-home-text {
-  color: rgba(242, 232, 234, 0.78);
+  color: rgba(242, 232, 234, 0.82);
 }
 
 .homelab-page.docs-reading-mode .docs-home-text {
@@ -2377,10 +2430,8 @@ body.docs-sidebar-open {
 }
 
 .docs-home-hero {
-  display: grid;
-  grid-template-columns: 1fr min(240px, 30%);
-  gap: 2.5rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   padding-bottom: 2.25rem;
 }
 
@@ -2394,28 +2445,39 @@ body.docs-sidebar-open {
 
 .docs-home-rail {
   display: flex;
-  flex-direction: column;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid transparent;
+  flex-direction: row;
+  gap: 0;
+  border: none;
+  background: none;
+  border-radius: 0;
+  overflow: visible;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
 }
 
 .homelab-page.docs-home-mode .docs-home-rail {
-  border-color: rgba(248, 245, 245, 0.09);
-  background: rgba(248, 245, 245, 0.04);
+  border-top: 1px solid rgba(248, 245, 245, 0.07);
 }
 
 .homelab-page.docs-reading-mode .docs-home-rail {
-  border-color: rgba(107, 30, 46, 0.08);
-  background: rgba(107, 30, 46, 0.03);
+  border-top: 1px solid rgba(107, 30, 46, 0.07);
 }
 
 .docs-home-stat {
-  padding: 0.85rem 1rem;
+  flex: 1;
+  padding: 0 1.5rem;
+}
+
+.docs-home-stat:first-child {
+  padding-left: 0;
+}
+
+.docs-home-stat:last-child {
+  padding-right: 0;
 }
 
 .docs-home-stat + .docs-home-stat {
-  border-top: 1px solid transparent;
+  border-left: 1px solid transparent;
 }
 
 .homelab-page.docs-home-mode .docs-home-stat + .docs-home-stat {
@@ -2433,18 +2495,18 @@ body.docs-sidebar-open {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--rose);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.35rem;
 }
 
 .docs-home-stat-value {
   display: block;
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.4;
 }
 
 .homelab-page.docs-home-mode .docs-home-stat-value {
-  color: rgba(248, 245, 245, 0.88);
+  color: rgba(248, 245, 245, 0.9);
 }
 
 .homelab-page.docs-reading-mode .docs-home-stat-value {
@@ -2457,7 +2519,7 @@ body.docs-sidebar-open {
 }
 
 .homelab-page.docs-home-mode .docs-home-stat-copy {
-  color: rgba(242, 232, 234, 0.58);
+  color: rgba(242, 232, 234, 0.55);
 }
 
 .homelab-page.docs-reading-mode .docs-home-stat-copy {
@@ -2465,15 +2527,11 @@ body.docs-sidebar-open {
 }
 
 .docs-home-search-shell {
-  margin-top: 2.25rem;
+  margin-top: 2.5rem;
 }
 
 .docs-home-search-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.8rem;
+  display: none;
 }
 
 .docs-home-search-head > div {
@@ -2579,7 +2637,7 @@ body.docs-sidebar-open {
 }
 
 .docs-home-search {
-  margin-top: 0.75rem;
+  margin-top: 0;
   display: grid;
   gap: 0.9rem;
 }
@@ -2588,7 +2646,7 @@ body.docs-sidebar-open {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 0.95rem 1rem 1rem;
+  padding: 1.05rem 1.1rem 1.15rem;
   border-radius: 22px;
   border: 1px solid transparent;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -2701,8 +2759,8 @@ body.docs-sidebar-open {
 .docs-search-results {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 1.65rem;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
 }
 
 .docs-search-empty {
@@ -2723,8 +2781,8 @@ body.docs-sidebar-open {
   display: block;
   position: relative;
   overflow: hidden;
-  padding: 1.2rem 1.25rem;
-  border-radius: 20px;
+  padding: 1.3rem 1.4rem;
+  border-radius: 22px;
   transition: var(--docs-transition);
   animation: docs-result-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -3359,15 +3417,13 @@ body.docs-sidebar-open {
   }
 
   .docs-home-hero {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
     padding-bottom: 1.5rem;
   }
 
   .docs-home-rail {
-    flex-direction: row;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
     flex-wrap: wrap;
-    border-radius: 14px;
   }
 
   .docs-home-stat {
@@ -3375,21 +3431,8 @@ body.docs-sidebar-open {
     min-width: 140px;
   }
 
-  .docs-home-stat + .docs-home-stat {
-    border-top: none;
-    border-left: 1px solid transparent;
-  }
-
-  .homelab-page.docs-home-mode .docs-home-stat + .docs-home-stat {
-    border-color: rgba(248, 245, 245, 0.07);
-  }
-
-  .homelab-page.docs-reading-mode .docs-home-stat + .docs-home-stat {
-    border-color: rgba(107, 30, 46, 0.07);
-  }
-
   .docs-home-search-shell {
-    margin-top: 1.5rem;
+    margin-top: 1.75rem;
   }
 
   .docs-search-results-shell {
@@ -3436,6 +3479,39 @@ body.docs-sidebar-open {
 
   .docs-results-note {
     display: none;
+  }
+
+  .docs-home-rail {
+    flex-direction: column;
+    gap: 0;
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .docs-home-stat {
+    flex: none;
+    padding: 0.75rem 0;
+  }
+
+  .docs-home-stat:first-child {
+    padding-top: 0;
+  }
+
+  .docs-home-stat:last-child {
+    padding-bottom: 0;
+  }
+
+  .docs-home-stat + .docs-home-stat {
+    border-left: none;
+    border-top: 1px solid transparent;
+  }
+
+  .homelab-page.docs-home-mode .docs-home-stat + .docs-home-stat {
+    border-color: rgba(248, 245, 245, 0.07);
+  }
+
+  .homelab-page.docs-reading-mode .docs-home-stat + .docs-home-stat {
+    border-color: rgba(107, 30, 46, 0.07);
   }
 
   .docs-home-search-shell {

@@ -255,18 +255,21 @@
   const raycaster = new THREE.Raycaster();
   const mouse     = new THREE.Vector2();
   let pointerStart = null;
-  let dragMoved = false;
+  let dragMoved    = false;
+  let touchStart   = null;
 
-  container.addEventListener('mousemove', e => {
+  function raycastAt(clientX, clientY) {
     const r = container.getBoundingClientRect();
-    mouse.x =  ((e.clientX - r.left) / r.width)  * 2 - 1;
-    mouse.y = -((e.clientY - r.top)  / r.height) * 2 + 1;
+    mouse.x =  ((clientX - r.left) / r.width)  * 2 - 1;
+    mouse.y = -((clientY - r.top)  / r.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(nodeMeshes.map(g => g._core));
+    return hits.length ? hits[0].object.parent._idx : -1;
+  }
 
-    const coreMeshes = nodeMeshes.map(g => g._core);
-    const hits = raycaster.intersectObjects(coreMeshes);
-    const newIdx = hits.length ? hits[0].object.parent._idx : -1;
-
+  // Desktop hover
+  container.addEventListener('mousemove', e => {
+    const newIdx = raycastAt(e.clientX, e.clientY);
     if (newIdx !== hoveredIdx) {
       if (hoveredIdx >= 0) {
         nodeMeshes[hoveredIdx].scale.setScalar(1);
@@ -283,36 +286,54 @@
     }
   });
 
+  // Desktop click — relies on mousemove having set hoveredIdx
   renderer.domElement.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse') return;
     pointerStart = { x: e.clientX, y: e.clientY };
     dragMoved = false;
   });
 
   renderer.domElement.addEventListener('pointermove', e => {
-    if (!pointerStart || dragMoved) return;
+    if (e.pointerType !== 'mouse' || !pointerStart || dragMoved) return;
     const dx = e.clientX - pointerStart.x;
     const dy = e.clientY - pointerStart.y;
-    if ((dx * dx) + (dy * dy) > 36) {
-      dragMoved = true;
-    }
+    if ((dx * dx) + (dy * dy) > 36) dragMoved = true;
   });
 
-  renderer.domElement.addEventListener('pointerup', () => {
+  renderer.domElement.addEventListener('pointerup', e => {
+    if (e.pointerType !== 'mouse') return;
     pointerStart = null;
   });
 
-  renderer.domElement.addEventListener('pointerleave', () => {
+  renderer.domElement.addEventListener('pointerleave', e => {
+    if (e.pointerType !== 'mouse') return;
     pointerStart = null;
   });
 
-  renderer.domElement.addEventListener('click', () => {
-    if (dragMoved) {
-      dragMoved = false;
-      return;
-    }
+  renderer.domElement.addEventListener('click', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (dragMoved) { dragMoved = false; return; }
     if (hoveredIdx >= 0) openPanel(hoveredIdx);
     else closePanel();
   });
+
+  // Mobile tap — raycast at the touch position directly; passive keeps page scroll intact
+  renderer.domElement.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { touchStart = null; return; }
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+
+  renderer.domElement.addEventListener('touchend', e => {
+    if (!touchStart || e.changedTouches.length !== 1) { touchStart = null; return; }
+    const dx = e.changedTouches[0].clientX - touchStart.x;
+    const dy = e.changedTouches[0].clientY - touchStart.y;
+    const wasTap = (dx * dx) + (dy * dy) < 100;
+    const pos = { x: touchStart.x, y: touchStart.y };
+    touchStart = null;
+    if (!wasTap) return;
+    const hitIdx = raycastAt(pos.x, pos.y);
+    if (hitIdx >= 0) openPanel(hitIdx);
+  }, { passive: true });
 
   /* ── Panel ───────────────────────────────────────────────────── */
   function openPanel(idx) {
@@ -359,6 +380,7 @@
 
   function closePanel() {
     panel.classList.remove('open');
+    easeCamera(overviewPos.clone(), overviewTarget.clone(), 850);
   }
 
   panelClose.addEventListener('click', closePanel);
